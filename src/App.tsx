@@ -9,14 +9,13 @@ import { VarianceChart } from './components/VarianceChart';
 function App() {
   const { 
     sendAmount, sendCurrency, receiveCurrency, activeAsset,
-    setSendAmount, setSendCurrency, setReceiveCurrency, swap, setActiveAsset
+    setSendAmount, setSendCurrency, swap, setActiveAsset
   } = useExchangeStore();
   
   const { data: market, isLoading, refetch, isFetching, dataUpdatedAt } = useMarketData();
   const [copied, setCopied] = useState(false);
   const [timeSinceUpdate, setTimeSinceUpdate] = useState(0);
 
-  // Track freshness (seconds since last update)
   useEffect(() => {
     const interval = setInterval(() => {
       if (dataUpdatedAt) {
@@ -27,11 +26,9 @@ function App() {
     return () => clearInterval(interval);
   }, [dataUpdatedAt]);
 
-  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
-
       switch (e.key.toLowerCase()) {
         case 'r': refetch(); break;
         case 's': swap(); break;
@@ -72,14 +69,12 @@ function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Freshness Logic
   const getFreshnessColor = () => {
-    if (timeSinceUpdate < 60) return 'bg-led-green'; // 🟢
-    if (timeSinceUpdate < 300) return 'bg-yellow-400'; // 🟡
-    return 'bg-danger'; // 🔴
+    if (timeSinceUpdate < 60) return 'bg-led-green'; 
+    if (timeSinceUpdate < 300) return 'bg-yellow-400'; 
+    return 'bg-danger'; 
   };
 
-  // Comparison Table Data
   const baseCallGoldUsd = 4187.34;
   const baseCallGoldZar = baseCallGoldUsd * 18.50;
   const baseCallUnitRate = baseCallGoldZar * 0.1033;
@@ -99,7 +94,6 @@ function App() {
   return (
     <div className="min-h-screen bg-page-bg text-white pb-12">
       
-      {/* Top Bar */}
       <header className="flex items-center justify-between p-4 bg-card-bg border-b border-elevated-bg">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-ghd-gold rounded flex items-center justify-center font-bold text-black text-xl">G</div>
@@ -125,7 +119,6 @@ function App() {
 
       <main className="max-w-md mx-auto p-4 mt-8">
         
-        {/* Top Rate Header */}
         <div className="mb-4 flex items-end justify-between">
           <h2 className="text-2xl font-mono text-ghd-gold">
             1 GHD = {currencySymbol}{displayRate}
@@ -137,7 +130,6 @@ function App() {
           </div>
         </div>
 
-        {/* Input Card */}
         <div className="bg-card-bg p-5 rounded-xl border border-elevated-bg shadow-lg relative z-20">
           <p className="text-center text-gray-400 text-sm mb-4">1. Choose Your Currency Here</p>
           
@@ -171,7 +163,6 @@ function App() {
           />
         </div>
 
-        {/* Swap Button */}
         <div className="flex justify-center -my-3 relative z-30">
           <button 
             onClick={swap}
@@ -182,11 +173,11 @@ function App() {
           </button>
         </div>
 
-        {/* Output Card */}
         <div className="bg-card-bg p-5 rounded-xl border border-elevated-bg shadow-lg relative z-10">
           <div className="flex justify-between items-center gap-4 mb-4">
             <div className="w-32">
-              <CurrencyPicker selected={receiveCurrency} disabled />
+              {/* Added onChange={() => {}} to fix the TS error */}
+              <CurrencyPicker selected={receiveCurrency} onChange={() => {}} disabled />
             </div>
             
             {!isSendingToken ? (
@@ -215,7 +206,6 @@ function App() {
           </div>
         </div>
 
-        {/* Market Indicators Card */}
         <div className="mt-8 bg-market-teal text-black p-4 rounded-xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Market Indicators</h3>
           <div className="space-y-2 font-mono text-sm">
@@ -242,13 +232,11 @@ function App() {
           </div>
         </div>
 
-        {/* Variance Monitor */}
         <div className="mt-8 bg-card-bg p-4 rounded-xl border border-elevated-bg">
           <h3 className="font-semibold text-white mb-4">Variance Monitor (1W)</h3>
           <VarianceChart data={market.historyData} />
         </div>
 
-        {/* Comparison Table */}
         <div className="mt-8 bg-card-bg p-4 rounded-xl border border-elevated-bg overflow-x-auto">
           <h3 className="font-semibold text-white mb-4">Model vs. Base Call</h3>
           <table className="w-full text-left text-sm whitespace-nowrap">
@@ -289,7 +277,6 @@ function App() {
           </table>
         </div>
 
-        {/* Footer Disclaimer */}
         <footer className="mt-12 text-center text-xs text-gray-500">
           GHD Converter · Indicative values only. Not financial advice.
         </footer>

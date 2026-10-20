@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convert, runInvariantTest, PEG_FACTORS } from './engine';
+import { convert, runInvariantTest } from './engine';
 
 describe('GHD Math Engine', () => {
   const mockGoldUsd = 2400; // $2400 per oz

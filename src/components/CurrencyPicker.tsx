@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
-import { CURRENCIES, type Currency } from '../lib/currencies';
+import { CURRENCIES } from '../lib/currencies';
 
 interface Props {
   selected: string;
@@ -13,7 +13,6 @@ export function CurrencyPicker({ selected, onChange, disabled }: Props) {
   const [search, setSearch] = useState('');
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {

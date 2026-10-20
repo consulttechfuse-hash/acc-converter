@@ -26,6 +26,7 @@ function App() {
     return () => clearInterval(interval);
   }, [dataUpdatedAt]);
 
+  // Keyboard Shortcuts (Kept 'S' and 'R' on desktop, removed visual hints)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -61,7 +62,7 @@ function App() {
   );
 
   const displayRate = (market.goldUsd * getForex(fiatCurrency) * 0.1033).toFixed(2);
-  const currencySymbol = fiatCurrency === 'ZAR' ? 'R' : fiatCurrency === 'USD' ? '$' : '€';
+  const currencySymbol = fiatCurrency === 'ZAR' ? 'R' : fiatCurrency === 'USD' ? '$' : fiatCurrency === 'EUR' ? '€' : fiatCurrency === 'GBP' ? '£' : '';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result.output.toFixed(2));
@@ -94,6 +95,7 @@ function App() {
   return (
     <div className="min-h-screen bg-page-bg text-white pb-12">
       
+      {/* Top Bar */}
       <header className="flex items-center justify-between p-4 bg-card-bg border-b border-elevated-bg">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-ghd-gold rounded flex items-center justify-center font-bold text-black text-xl">G</div>
@@ -117,31 +119,31 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto p-4 mt-8">
+      <main className="max-w-2xl mx-auto p-4 mt-6">
         
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-mono text-ghd-gold">
-            1 GHD = {currencySymbol}{displayRate}
+        {/* Top Rate Header - Now in one line */}
+        <div className="mb-6 text-center sm:text-left">
+          <h2 className="text-2xl font-mono text-white whitespace-nowrap">
+            <span className="text-ghd-gold">1 GHD</span> = {currencySymbol}{displayRate}
           </h2>
-          <div className="hidden sm:flex gap-2 text-xs text-gray-500 font-mono">
-            <span>[S] Swap</span>
-            <span>[G] Gold</span>
-            <span>[X] Silver</span>
-          </div>
         </div>
 
-        <div className="bg-card-bg p-5 rounded-xl border border-elevated-bg shadow-lg relative z-20">
-          <p className="text-center text-gray-400 text-sm mb-4">1. Choose Your Currency Here</p>
+        {/* Top Card (Send) - Styled based on the template */}
+        <div className={`p-6 rounded-2xl shadow-xl relative z-20 transition-colors ${isSendingToken ? 'bg-ghd-gold text-black' : 'bg-card-bg border border-elevated-bg text-white'}`}>
           
-          <div className="flex justify-between items-center gap-4 mb-4">
-            <div className="w-32">
-              <CurrencyPicker selected={sendCurrency} onChange={setSendCurrency} />
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="w-full sm:w-48">
+              <CurrencyPicker 
+                selected={sendCurrency} 
+                onChange={setSendCurrency} 
+                isGoldCard={isSendingToken} 
+              />
             </div>
             
             {isSendingToken ? (
               <button 
                 onClick={() => setActiveAsset(activeAsset === 'gold' ? 'silver' : 'gold')}
-                className="bg-ghd-gold text-black text-xs font-bold px-2 py-1 rounded hover:opacity-80 transition-opacity"
+                className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded-md hover:opacity-80 transition-opacity"
               >
                 {activeAsset === 'gold' ? 'Gold Anchored' : 'Silver Anchored'}
               </button>
@@ -152,61 +154,78 @@ function App() {
               </div>
             )}
           </div>
+
+          <p className={`text-sm mb-2 ${isSendingToken ? 'text-black/70' : 'text-gray-400'}`}>
+            1. Choose Your Currency Here
+          </p>
 
           <input
             type="number"
             inputMode="decimal"
             value={sendAmount}
             onChange={(e) => setSendAmount(e.target.value)}
-            className="w-full bg-transparent text-4xl font-mono text-white outline-none"
+            className={`w-full bg-transparent text-5xl font-mono outline-none ${isSendingToken ? 'text-black' : 'text-white'}`}
             placeholder="0.00"
           />
         </div>
 
-        <div className="flex justify-center -my-3 relative z-30">
+        {/* Swap Button - Rectangular with labels */}
+        <div className="flex justify-center -my-4 relative z-30">
           <button 
             onClick={swap}
-            className="w-12 h-12 bg-ghd-gold rounded-full flex items-center justify-center text-black hover:scale-105 transition-transform shadow-xl"
+            className="flex items-center gap-2 px-6 py-3 bg-ghd-gold rounded-xl text-black font-bold text-sm hover:scale-105 transition-transform shadow-xl"
             aria-label="Swap currencies"
           >
-            <ArrowRightLeft size={20} />
+            <ArrowRightLeft size={18} />
+            <span>SWAP</span>
           </button>
         </div>
 
-        <div className="bg-card-bg p-5 rounded-xl border border-elevated-bg shadow-lg relative z-10">
-          <div className="flex justify-between items-center gap-4 mb-4">
-            <div className="w-32">
-              {/* Added onChange={() => {}} to fix the TS error */}
-              <CurrencyPicker selected={receiveCurrency} onChange={() => {}} disabled />
+        {/* Bottom Card (Receive) */}
+        <div className={`p-6 rounded-2xl shadow-xl relative z-10 ${!isSendingToken ? 'bg-ghd-gold text-black' : 'bg-card-bg border border-elevated-bg text-white'}`}>
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="w-full sm:w-48">
+              <CurrencyPicker 
+                selected={receiveCurrency} 
+                onChange={() => {}} 
+                disabled 
+                isGoldCard={!isSendingToken}
+              />
             </div>
             
             {!isSendingToken ? (
               <button 
                 onClick={() => setActiveAsset(activeAsset === 'gold' ? 'silver' : 'gold')}
-                className="bg-ghd-gold text-black text-xs font-bold px-2 py-1 rounded hover:opacity-80 transition-opacity"
+                className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded-md hover:opacity-80 transition-opacity"
               >
                 {activeAsset === 'gold' ? 'Gold Anchored' : 'Silver Anchored'}
               </button>
             ) : (
-              <div className="flex items-center gap-1 text-xs text-gray-400">
+              <div className={`flex items-center gap-1 text-xs ${!isSendingToken ? 'text-black/70' : 'text-gray-400'}`}>
                 <Lock size={12} />
                 <span>Currency</span>
               </div>
             )}
           </div>
+
+          <p className={`text-sm mb-2 ${!isSendingToken ? 'text-black/70' : 'text-gray-400'}`}>
+            Computed
+          </p>
           
           <div 
             onClick={handleCopy}
-            className="text-4xl font-mono text-gray-300 cursor-pointer hover:text-white transition-colors relative group"
+            className={`text-5xl font-mono cursor-pointer transition-colors relative group ${!isSendingToken ? 'text-black' : 'text-gray-300'}`}
           >
-            {result.output.toFixed(2)}
-            <span className="absolute top-0 right-0 text-xs text-ghd-gold opacity-0 group-hover:opacity-100 transition-opacity font-sans font-normal bg-card-bg px-1">
+            {result.output.toFixed(4)}
+            <span className="absolute top-0 right-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity font-sans font-normal px-2 py-1 bg-black/10 rounded">
               {copied ? 'Copied!' : 'Click to copy'}
             </span>
           </div>
         </div>
 
-        <div className="mt-8 bg-market-teal text-black p-4 rounded-xl shadow-lg">
+        {/* Market Indicators Card */}
+        <div className="mt-8 bg-market-teal text-black p-5 rounded-2xl shadow-lg">
           <h3 className="font-bold text-lg mb-3">Market Indicators</h3>
           <div className="space-y-2 font-mono text-sm">
             <div className="flex justify-between items-center">
@@ -225,19 +244,21 @@ function App() {
               <span>Anchor Ratio:</span>
               <span>{activeAsset === 'gold' ? '0.1033' : '0.1036'} oz</span>
             </div>
-            <div className="flex justify-between items-center text-xs text-gray-800 mt-2">
+            <div className="flex justify-between items-center text-xs text-black/60 mt-2">
               <span>Last Updated:</span>
               <span>{timeSinceUpdate}s ago</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 bg-card-bg p-4 rounded-xl border border-elevated-bg">
+        {/* Variance Monitor */}
+        <div className="mt-8 bg-card-bg p-5 rounded-2xl border border-elevated-bg">
           <h3 className="font-semibold text-white mb-4">Variance Monitor (1W)</h3>
           <VarianceChart data={market.historyData} />
         </div>
 
-        <div className="mt-8 bg-card-bg p-4 rounded-xl border border-elevated-bg overflow-x-auto">
+        {/* Comparison Table */}
+        <div className="mt-8 bg-card-bg p-5 rounded-2xl border border-elevated-bg overflow-x-auto">
           <h3 className="font-semibold text-white mb-4">Model vs. Base Call</h3>
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead>

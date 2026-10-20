@@ -12,43 +12,45 @@ function App() {
     setSendAmount, setSendCurrency, setReceiveCurrency, swap, setActiveAsset
   } = useExchangeStore();
   
-  const { data: market, isLoading, refetch, isFetching } = useMarketData();
+  const { data: market, isLoading, refetch, isFetching, dataUpdatedAt } = useMarketData();
   const [copied, setCopied] = useState(false);
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState(0);
+
+  // Track freshness (seconds since last update)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (dataUpdatedAt) {
+        const diffInSeconds = Math.floor((Date.now() - dataUpdatedAt) / 1000);
+        setTimeSinceUpdate(diffInSeconds);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dataUpdatedAt]);
 
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts if the user is typing in an input
       if (e.target instanceof HTMLInputElement) return;
 
       switch (e.key.toLowerCase()) {
-        case 'r':
-          refetch();
-          break;
-        case 's':
-          swap();
-          break;
-        case 'g':
-          setActiveAsset('gold');
-          break;
-        case 'x':
-          setActiveAsset('silver');
-          break;
+        case 'r': refetch(); break;
+        case 's': swap(); break;
+        case 'g': setActiveAsset('gold'); break;
+        case 'x': setActiveAsset('silver'); break;
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [refetch, swap, setActiveAsset]);
 
   if (isLoading || !market) {
-    return <div className="min-h-screen bg-page-bg text-white flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen bg-page-bg text-white flex items-center justify-center">Loading Live Data...</div>;
   }
 
   const getForex = (currency: string) => {
     if (currency === 'ZAR') return market.usdToZar;
     if (currency === 'EUR') return market.usdToEur;
-    return 1; // USD
+    return 1;
   };
 
   const isSendingToken = sendCurrency === 'GHD' || sendCurrency === 'GHD_SILVER';
@@ -58,24 +60,26 @@ function App() {
   const forex = getForex(fiatCurrency);
 
   const result = convert(
-    Number(sendAmount) || 0, 
-    direction, 
-    activeAsset, 
-    metalPrice, 
-    forex
+    Number(sendAmount) || 0, direction, activeAsset, metalPrice, forex
   );
 
   const displayRate = (market.goldUsd * getForex(fiatCurrency) * 0.1033).toFixed(2);
   const currencySymbol = fiatCurrency === 'ZAR' ? 'R' : fiatCurrency === 'USD' ? '$' : '€';
 
-  // --- COPY TO CLIPBOARD ---
   const handleCopy = () => {
     navigator.clipboard.writeText(result.output.toFixed(2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // --- COMPARISON TABLE DATA ---
+  // Freshness Logic
+  const getFreshnessColor = () => {
+    if (timeSinceUpdate < 60) return 'bg-led-green'; // 🟢
+    if (timeSinceUpdate < 300) return 'bg-yellow-400'; // 🟡
+    return 'bg-danger'; // 🔴
+  };
+
+  // Comparison Table Data
   const baseCallGoldUsd = 4187.34;
   const baseCallGoldZar = baseCallGoldUsd * 18.50;
   const baseCallUnitRate = baseCallGoldZar * 0.1033;
@@ -104,14 +108,15 @@ function App() {
         
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-led-green animate-pulse"></div>
-            <span className="text-xs text-gray-400 hidden sm:block">Active</span>
+            <div className={`w-2 h-2 rounded-full ${getFreshnessColor()} animate-pulse`}></div>
+            <span className="text-xs text-gray-400 hidden sm:block">
+              {timeSinceUpdate < 60 ? 'Live' : 'Stale'}
+            </span>
           </div>
           <button 
             onClick={() => refetch()}
             className="p-2 bg-elevated-bg rounded-lg hover:bg-gray-600 transition-colors"
             aria-label="Refresh data"
-            title="Refresh (R)"
           >
             <RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />
           </button>
@@ -172,7 +177,6 @@ function App() {
             onClick={swap}
             className="w-12 h-12 bg-ghd-gold rounded-full flex items-center justify-center text-black hover:scale-105 transition-transform shadow-xl"
             aria-label="Swap currencies"
-            title="Swap (S)"
           >
             <ArrowRightLeft size={20} />
           </button>
@@ -200,11 +204,9 @@ function App() {
             )}
           </div>
           
-          {/* Click to Copy Output */}
           <div 
             onClick={handleCopy}
             className="text-4xl font-mono text-gray-300 cursor-pointer hover:text-white transition-colors relative group"
-            title="Click to copy"
           >
             {result.output.toFixed(2)}
             <span className="absolute top-0 right-0 text-xs text-ghd-gold opacity-0 group-hover:opacity-100 transition-opacity font-sans font-normal bg-card-bg px-1">
@@ -219,15 +221,15 @@ function App() {
           <div className="space-y-2 font-mono text-sm">
             <div className="flex justify-between items-center">
               <span>🟠 Gold (XAU):</span>
-              <span>${market.goldUsd.toFixed(2)} <span className="text-green-800">+0.5%</span></span>
+              <span>${market.goldUsd.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>⚪ Silver (XAG):</span>
-              <span>${market.silverUsd.toFixed(2)} <span className="text-red-700">-0.2%</span></span>
+              <span>${market.silverUsd.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>FX: USD/{fiatCurrency}:</span>
-              <span>{forex.toFixed(2)} <span className="text-green-800">+0.1%</span></span>
+              <span>{forex.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-t border-black/20 pt-2 mt-2">
               <span>Anchor Ratio:</span>
@@ -235,7 +237,7 @@ function App() {
             </div>
             <div className="flex justify-between items-center text-xs text-gray-800 mt-2">
               <span>Last Updated:</span>
-              <span>{new Date().toLocaleTimeString()}</span>
+              <span>{timeSinceUpdate}s ago</span>
             </div>
           </div>
         </div>

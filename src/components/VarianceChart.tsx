@@ -74,13 +74,14 @@ export function VarianceChart({ data, silverHistoryData, timeframe, setTimeframe
               tickLine={false} 
               axisLine={false} 
               domain={['dataMin - (dataMax - dataMin) * 0.1', 'dataMax + (dataMax - dataMin) * 0.1']}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
+              tickFormatter={(value) => `$${Number(value).toFixed(0)}`}
               width={45}
             />
             <Tooltip 
               contentStyle={{ backgroundColor: '#222222', borderColor: '#2D2D2D', color: '#fff', borderRadius: '8px' }}
               itemStyle={{ color: chartColor }}
-              formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+              // Changed `value: number` to `value: any` to satisfy strict TS
+              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Price']}
             />
             <Line 
               type="monotone" 

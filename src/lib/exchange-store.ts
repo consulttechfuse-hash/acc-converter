@@ -4,7 +4,7 @@ interface ExchangeState {
   sendAmount: string;
   sendCurrency: string;
   receiveCurrency: string;
-  activeAsset: 'gold' | 'silver'; // Which card is the input?
+  activeAsset: 'gold' | 'silver';
   
   setSendAmount: (amount: string) => void;
   setSendCurrency: (currency: string) => void;
@@ -15,8 +15,8 @@ interface ExchangeState {
 
 export const useExchangeStore = create<ExchangeState>((set) => ({
   sendAmount: '1',
-  sendCurrency: 'GHD',
-  receiveCurrency: 'ZAR',
+  sendCurrency: 'ZAR',       // Default top card is Fiat
+  receiveCurrency: 'GHD',    // Default bottom card is Token
   activeAsset: 'gold',
 
   setSendAmount: (amount) => set({ sendAmount: amount }),
@@ -24,7 +24,6 @@ export const useExchangeStore = create<ExchangeState>((set) => ({
   setReceiveCurrency: (currency) => set({ receiveCurrency: currency }),
   setActiveAsset: (asset) => set({ activeAsset: asset }),
   
-  // Flip the currencies
   swap: () => set((state) => ({
     sendCurrency: state.receiveCurrency,
     receiveCurrency: state.sendCurrency,

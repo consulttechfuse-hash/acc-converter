@@ -189,8 +189,8 @@ function App() {
           </div>
 
           <footer className="mt-auto pt-6 w-full text-center text-[10px] text-black/40 font-medium flex flex-col gap-1 relative z-10">
-            <p>All rights reserved. ACC All Currency Converter is a free informational tool and is not affiliated with, endorsed by, or connected to the GHD Global Harmony Dollar Calculator or its operators. Rates are indicative only.</p>
-            <p className="mt-1 opacity-70">© {new Date().getFullYear()} Cashcade (Pty). All rights reserved.</p>
+            <p>ACC All Currency Converter is a free infor. Rates are indicative only.</p>
+            <p className="mt-1 opacity-70">© {new Date().getFullYear()} All rights reserved.</p>
           </footer>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { ArrowDownUp, Lock, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useExchangeStore } from './lib/exchange-store';
 import { useMarketData } from './lib/market';
 import { convert } from './lib/engine';
@@ -13,19 +13,8 @@ function App() {
     setSendAmount, setSendCurrency, swap, setActiveAsset, setReceiveCurrency
   } = useExchangeStore();
   
-  const { data: market, isLoading, refetch, isFetching, dataUpdatedAt } = useMarketData();
+  const { data: market, isLoading, refetch, isFetching } = useMarketData();
   const [copied, setCopied] = useState(false);
-  const [timeSinceUpdate, setTimeSinceUpdate] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (dataUpdatedAt) {
-        const diffInSeconds = Math.floor((Date.now() - dataUpdatedAt) / 1000);
-        setTimeSinceUpdate(diffInSeconds);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [dataUpdatedAt]);
 
   if (isLoading || !market) {
     return <div className="min-h-screen bg-[#F2F2F7] text-black flex items-center justify-center font-medium">Loading...</div>;
@@ -38,7 +27,6 @@ function App() {
   const fiatCurrency = isSendingToken ? receiveCurrency : sendCurrency;
   
   const selectedFiat = CURRENCIES.find(c => c.code === fiatCurrency);
-  const fiatSymbol = selectedFiat?.symbol || '';
   
   const metalPrice = activeAsset === 'gold' ? market.goldUsd : market.silverUsd;
   const forex = getForex(fiatCurrency);
@@ -63,7 +51,6 @@ function App() {
   const formattedInputValue = sendAmount ? Number(sendAmount).toLocaleString('en-US') : '';
   const formattedOutputValue = result.output.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
-  // Dynamic font sizing to prevent overflow
   const getDynamicSize = (val: string) => {
     if (val.length > 12) return "text-3xl";
     if (val.length > 9) return "text-4xl";
@@ -73,7 +60,6 @@ function App() {
   return (
     <div className="min-h-screen bg-[#F2F2F7] text-black flex flex-col items-center font-sans selection:bg-blue-200">
       
-      {/* HEADER */}
       <header className="w-full max-w-md flex items-center justify-between p-6 pt-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-black rounded-[14px] flex items-center justify-center font-bold text-white text-xl shadow-sm">
@@ -96,18 +82,15 @@ function App() {
 
       <main className="w-full max-w-md px-4 pb-12">
         
-        {/* SUBTITLE */}
         <div className="text-center mb-8 mt-2">
           <p className="text-sm font-medium text-gray-500">This is a free to use tool.</p>
         </div>
 
-        {/* CONVERTER CONTAINER */}
         <div className="relative">
           
           {/* TOP CARD (SEND) */}
           <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_20px_rgba(0,0,0,0.04)] mb-2 relative z-10 transition-all">
             <div className="flex justify-between items-center mb-4">
-              {/* Currency Selector */}
               <div className="flex items-center gap-2.5">
                 {!isSendingToken && selectedFiat?.countryCode && (
                   <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden shrink-0">
@@ -119,7 +102,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Gold/Silver Toggle OR Lock Icon */}
               {isSendingToken ? (
                 <div className="flex bg-gray-100 rounded-full p-1">
                   <button onClick={() => setActiveAsset('gold')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'gold' ? 'bg-white shadow-sm text-black' : 'text-gray-500'}`}>Gold</button>
@@ -133,7 +115,6 @@ function App() {
               )}
             </div>
 
-            {/* Input Area */}
             <div className="flex items-center justify-between">
               <input
                 type="text"
@@ -146,7 +127,7 @@ function App() {
             </div>
           </div>
 
-          {/* SWAP BUTTON (Floating between cards) */}
+          {/* SWAP BUTTON */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
             <button 
               onClick={swap} 
@@ -159,7 +140,6 @@ function App() {
           {/* BOTTOM CARD (RECEIVE) */}
           <div className="bg-white rounded-[24px] p-5 shadow-[0_2px_20px_rgba(0,0,0,0.04)] mt-2 relative z-10 transition-all">
             <div className="flex justify-between items-center mb-4">
-              {/* Currency Selector */}
               <div className="flex items-center gap-2.5">
                 {isSendingToken && selectedFiat?.countryCode && (
                   <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden shrink-0">
@@ -171,7 +151,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Gold/Silver Toggle OR Lock Icon */}
               {!isSendingToken ? (
                 <div className="flex bg-gray-100 rounded-full p-1">
                   <button onClick={() => setActiveAsset('gold')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'gold' ? 'bg-white shadow-sm text-black' : 'text-gray-500'}`}>Gold</button>
@@ -185,7 +164,6 @@ function App() {
               )}
             </div>
 
-            {/* Output Area */}
             <div 
               onClick={handleCopy} 
               className={`w-full font-semibold tracking-tight cursor-pointer transition-all relative group whitespace-nowrap ${getDynamicSize(formattedOutputValue)}`}
@@ -199,7 +177,6 @@ function App() {
 
         </div>
 
-        {/* FOOTER */}
         <footer className="mt-16 text-center text-xs text-gray-400 font-medium flex flex-col gap-1">
           <p>ACC - All Currency Converter</p>
           <p>Indicative values only. Not financial advice.</p>

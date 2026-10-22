@@ -65,7 +65,7 @@ function App() {
     <div className="min-h-screen bg-[#fbfcf8] flex items-center justify-center p-0 sm:p-6 font-sans selection:bg-black/10">
       
       {/* iPhone Style Frame Wrapper */}
-      <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[850px] sm:w-[400px] sm:rounded-[48px] sm:border-[12px] sm:border-[#343d46] sm:shadow-[0_25px_60px_rgba(0,0,0,0.15)] overflow-hidden bg-[#fff3d7] relative flex flex-col">
+      <div className="w-[95%] h-[90dvh] max-h-[850px] max-w-[400px] rounded-[48px] border-[12px] border-[#343d46] shadow-[0_25px_60px_rgba(0,0,0,0.15)] overflow-hidden bg-[#fff3d7] relative flex flex-col mt-4">
         
         {/* Inner App Container */}
         <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-10 sm:pt-12 pb-6 px-4 relative">

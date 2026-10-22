@@ -190,7 +190,8 @@ function App() {
 
           <footer className="mt-auto pt-6 w-full text-center text-[10px] text-black/40 font-medium flex flex-col gap-1 relative z-10">
             <p>ACC - All Currency Converter</p>
-            <p>Indicative values only. Not financial advice.</p>
+            <p>All Values are Indicative only. This is Not financial advice.</p>
+            <p className="mt-1 opacity-70">© {new Date().getFullYear()} Cashcade (Pty). All rights reserved.</p>
           </footer>
         </div>
       </div>

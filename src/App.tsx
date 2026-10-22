@@ -62,16 +62,17 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfcf8] flex items-center justify-center p-0 sm:p-6 font-sans selection:bg-black/10">
+    /* Outer Background: Soft grey to make the frame pop on any screen */
+    <div className="min-h-screen bg-[#E5E5EA] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-black/10">
       
-      {/* iPhone Style Frame Wrapper */}
-      <div className="w-[95%] h-[90dvh] max-h-[850px] max-w-[400px] rounded-[48px] border-[12px] border-[#343d46] shadow-[0_25px_60px_rgba(0,0,0,0.15)] overflow-hidden bg-[#fff3d7] relative flex flex-col mt-4">
+      {/* iPhone Frame Wrapper: Always visible, forced size */}
+      <div className="w-full max-w-[390px] h-[85vh] max-h-[844px] rounded-[48px] border-[14px] border-[#343d46] shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden bg-[#fff3d7] relative flex flex-col">
         
-        {/* Inner App Container */}
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-10 sm:pt-12 pb-6 px-4 relative">
+        {/* Inner App Container - Scrolls inside the phone frame */}
+        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-8 pb-6 px-4 relative">
           
           {/* HEADER */}
-          <header className="w-full flex items-center justify-between mb-8 relative z-10">
+          <header className="w-full flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black text-white rounded-[12px] flex items-center justify-center font-bold text-xl shadow-sm">
                 A
@@ -91,7 +92,7 @@ function App() {
             </button>
           </header>
 
-          <div className="text-center mb-6 relative z-10">
+          <div className="text-center mb-4 relative z-10">
             <p className="text-xs font-medium text-black/50">This is a free to use tool.</p>
           </div>
 
@@ -137,7 +138,7 @@ function App() {
               </div>
             </div>
 
-            {/* SWAP BUTTON - Back to z-30 since Portal handles the dropdown z-index */}
+            {/* SWAP BUTTON */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
               <button 
                 onClick={swap} 
@@ -187,7 +188,7 @@ function App() {
 
           </div>
 
-          <footer className="mt-auto pt-8 w-full text-center text-[10px] text-black/40 font-medium flex flex-col gap-1 relative z-10">
+          <footer className="mt-auto pt-6 w-full text-center text-[10px] text-black/40 font-medium flex flex-col gap-1 relative z-10">
             <p>ACC - All Currency Converter</p>
             <p>Indicative values only. Not financial advice.</p>
           </footer>

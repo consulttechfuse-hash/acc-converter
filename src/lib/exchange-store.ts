@@ -15,8 +15,8 @@ interface ExchangeState {
 
 export const useExchangeStore = create<ExchangeState>((set) => ({
   sendAmount: '1',
-  sendCurrency: 'ZAR',       // Default top card is Fiat
-  receiveCurrency: 'GHD',    // Default bottom card is Token
+  sendCurrency: 'ZAR',
+  receiveCurrency: 'ACC',    // <--- CHANGED FROM GHD
   activeAsset: 'gold',
 
   setSendAmount: (amount) => set({ sendAmount: amount }),

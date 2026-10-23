@@ -40,7 +40,7 @@ function App() {
   );
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(result.output.toFixed(4));
+    navigator.clipboard.writeText(result.output.toFixed(2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -53,7 +53,7 @@ function App() {
   };
 
   const formattedInputValue = sendAmount ? Number(sendAmount).toLocaleString('en-US') : '';
-  const formattedOutputValue = result.output.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  const formattedOutputValue = result.output.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const getDynamicSize = (val: string) => {
     if (val.length > 12) return "text-3xl";
@@ -62,16 +62,12 @@ function App() {
   };
 
   return (
-    /* Outer Background: Soft grey to make the frame pop on any screen */
     <div className="min-h-screen bg-[#E5E5EA] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-black/10">
       
-      {/* iPhone Frame Wrapper: Always visible, forced size */}
       <div className="w-full max-w-[390px] h-[85vh] max-h-[844px] rounded-[48px] border-[14px] border-[#343d46] shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden bg-[#fff3d7] relative flex flex-col">
         
-        {/* Inner App Container - Scrolls inside the phone frame */}
         <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-8 pb-6 px-4 relative">
           
-          {/* HEADER */}
           <header className="w-full flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black text-white rounded-[12px] flex items-center justify-center font-bold text-xl shadow-sm">
@@ -96,10 +92,8 @@ function App() {
             <p className="text-xs font-medium text-black/50">This is a free to use tool.</p>
           </div>
 
-          {/* CALCULATOR SECTION */}
           <div className="w-full relative z-10">
             
-            {/* TOP CARD (SEND) */}
             <div className="bg-[#afe059] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mb-2 relative z-20 transition-all">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2.5">
@@ -138,7 +132,6 @@ function App() {
               </div>
             </div>
 
-            {/* SWAP BUTTON */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
               <button 
                 onClick={swap} 
@@ -148,7 +141,6 @@ function App() {
               </button>
             </div>
 
-            {/* BOTTOM CARD (RECEIVE) */}
             <div className="bg-[#b9d6f1] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mt-2 relative z-10 transition-all">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2.5">

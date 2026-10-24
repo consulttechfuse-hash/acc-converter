@@ -1,36 +1,44 @@
-export const K_G = 0.1033; // Gold Peg Factor
-export const K_S = 0.1036; // Silver Peg Factor
+export const K_G = 0.1033;
+export const K_S = 0.1036;
 
 interface ConvertParams {
   amount: number;
-  direction: 'tokenToFiat' | 'fiatToToken' | 'fiatToFiat';
+  sendType: 'fiat' | 'crypto' | 'acc';
+  receiveType: 'fiat' | 'crypto' | 'acc';
   activeAsset: 'gold' | 'silver';
-  metalPrice: number; // USD price of metal
-  forex: number;      // Target currency exchange rate (vs USD)
-  sourceForex?: number; // Optional: Source currency exchange rate (for fiat-to-fiat)
+  sendCurrency: string;
+  receiveCurrency: string;
+  market: {
+    goldUsd: number;
+    silverUsd: number;
+    forexRates: Record<string, number>;
+    cryptoRates: Record<string, number>;
+  };
 }
 
-export function convert({ amount, direction, activeAsset, metalPrice, forex, sourceForex }: ConvertParams) {
-  let output = 0;
+export function convert(params: ConvertParams) {
+  const { amount, sendType, receiveType, activeAsset, sendCurrency, receiveCurrency, market } = params;
   
-  if (direction === 'fiatToToken') {
-    const peg = activeAsset === 'gold' ? K_G : K_S;
-    output = amount / (metalPrice * forex * peg);
-  } 
-  else if (direction === 'tokenToFiat') {
-    const peg = activeAsset === 'gold' ? K_G : K_S;
-    output = amount * metalPrice * forex * peg;
-  } 
-  else if (direction === 'fiatToFiat') {
-    // Cross-currency math (e.g., USD to ZAR)
-    // sourceForex is how much USD is 1 unit of source currency
-    // forex is how much target currency is 1 USD
-    output = (amount / (sourceForex || 1)) * forex;
-  }
+  const goldUsd = market.goldUsd;
+  
+  const getUsdValue = (type: string, code: string) => {
+    if (type === 'fiat') return 1 / (market.forexRates[code] || 1);
+    if (type === 'crypto') return market.cryptoRates[code] || 0;
+    if (type === 'acc') {
+      const peg = (code === 'ACC_SILVER' || activeAsset === 'silver') ? K_S : K_G;
+      const metal = (code === 'ACC_SILVER' || activeAsset === 'silver') ? market.silverUsd : goldUsd;
+      return metal * peg;
+    }
+    return 0;
+  };
 
-  // Invariant check (only applies if tokens are involved)
-  let invariantOk = true;
-  let driftPct = 0;
+  const sourceUsdValue = getUsdValue(sendType, sendCurrency);
+  const targetUsdValue = getUsdValue(receiveType, receiveCurrency);
 
-  return { output, invariantOk, driftPct };
+  if (sourceUsdValue === 0 || targetUsdValue === 0) return { output: 0 };
+
+  const amountInUsd = amount * sourceUsdValue;
+  const finalOutput = amountInUsd / targetUsdValue;
+
+  return { output: finalOutput };
 }

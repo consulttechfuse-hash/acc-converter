@@ -3,11 +3,11 @@ export interface Currency {
   name: string;
   symbol: string;
   countryCode?: string;
-  type: 'fiat' | 'crypto';
+  type: 'fiat' | 'crypto' | 'acc';
 }
 
 export const CURRENCIES: Currency[] = [
-  // --- MAJOR FIAT CURRENCIES ---
+  // --- FIAT CURRENCIES ---
   { code: 'USD', name: 'US Dollar', symbol: '$', countryCode: 'us', type: 'fiat' },
   { code: 'EUR', name: 'Euro', symbol: '€', countryCode: 'eu', type: 'fiat' },
   { code: 'GBP', name: 'British Pound', symbol: '£', countryCode: 'gb', type: 'fiat' },
@@ -18,39 +18,33 @@ export const CURRENCIES: Currency[] = [
   { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', countryCode: 'cn', type: 'fiat' },
   { code: 'JPY', name: 'Japanese Yen', symbol: '¥', countryCode: 'jp', type: 'fiat' },
   { code: 'INR', name: 'Indian Rupee', symbol: '₹', countryCode: 'in', type: 'fiat' },
-  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', countryCode: 'nz', type: 'fiat' },
-  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$', countryCode: 'sg', type: 'fiat' },
-  { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$', countryCode: 'hk', type: 'fiat' },
-  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', countryCode: 'se', type: 'fiat' },
-  { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr', countryCode: 'no', type: 'fiat' },
-  { code: 'DKK', name: 'Danish Krone', symbol: 'kr', countryCode: 'dk', type: 'fiat' },
-  { code: 'PLN', name: 'Polish Zloty', symbol: 'zł', countryCode: 'pl', type: 'fiat' },
-  { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč', countryCode: 'cz', type: 'fiat' },
-  { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft', countryCode: 'hu', type: 'fiat' },
-  { code: 'RON', name: 'Romanian Leu', symbol: 'lei', countryCode: 'ro', type: 'fiat' },
-  { code: 'BGN', name: 'Bulgarian Lev', symbol: 'лв', countryCode: 'bg', type: 'fiat' },
-  { code: 'TRY', name: 'Turkish Lira', symbol: '₺', countryCode: 'tr', type: 'fiat' },
-  { code: 'RUB', name: 'Russian Ruble', symbol: '₽', countryCode: 'ru', type: 'fiat' },
-  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', countryCode: 'br', type: 'fiat' },
-  { code: 'MXN', name: 'Mexican Peso', symbol: '$', countryCode: 'mx', type: 'fiat' },
-  { code: 'ARS', name: 'Argentine Peso', symbol: '$', countryCode: 'ar', type: 'fiat' },
-  { code: 'CLP', name: 'Chilean Peso', symbol: '$', countryCode: 'cl', type: 'fiat' },
-  { code: 'COP', name: 'Colombian Peso', symbol: '$', countryCode: 'co', type: 'fiat' },
-  { code: 'KRW', name: 'South Korean Won', symbol: '₩', countryCode: 'kr', type: 'fiat' },
-  { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp', countryCode: 'id', type: 'fiat' },
-  { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM', countryCode: 'my', type: 'fiat' },
-  { code: 'PHP', name: 'Philippine Peso', symbol: '₱', countryCode: 'ph', type: 'fiat' },
-  { code: 'THB', name: 'Thai Baht', symbol: '฿', countryCode: 'th', type: 'fiat' },
-  { code: 'VND', name: 'Vietnamese Dong', symbol: '₫', countryCode: 'vn', type: 'fiat' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', countryCode: 'ae', type: 'fiat' },
-  { code: 'SAR', name: 'Saudi Riyal', symbol: 'ر.س', countryCode: 'sa', type: 'fiat' },
-  { code: 'ILS', name: 'Israeli Shekel', symbol: '₪', countryCode: 'il', type: 'fiat' },
-  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£', countryCode: 'eg', type: 'fiat' },
   { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', countryCode: 'ng', type: 'fiat' },
   { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh', countryCode: 'ke', type: 'fiat' },
   { code: 'GHS', name: 'Ghanaian Cedi', symbol: '₵', countryCode: 'gh', type: 'fiat' },
 
-  // --- CRYPTO TOKENS ---
-  { code: 'ACC', name: 'All Currency Converter (Gold)', symbol: 'ACC', type: 'crypto' },
-  { code: 'ACC_SILVER', name: 'All Currency Converter (Silver)', symbol: 'ACC', type: 'crypto' },
+  // --- ACC TOKENS ---
+  { code: 'ACC', name: 'ACC Gold', symbol: 'ACC', type: 'acc' },
+  { code: 'ACC_SILVER', name: 'ACC Silver', symbol: 'ACC', type: 'acc' },
+
+  // --- CRYPTO (Top 20 for Luno/VALR compatibility) ---
+  { code: 'BTC', name: 'Bitcoin', symbol: '₿', type: 'crypto' },
+  { code: 'ETH', name: 'Ethereum', symbol: 'Ξ', type: 'crypto' },
+  { code: 'XRP', name: 'Ripple', symbol: 'XRP', type: 'crypto' },
+  { code: 'SOL', name: 'Solana', symbol: 'SOL', type: 'crypto' },
+  { code: 'ADA', name: 'Cardano', symbol: 'ADA', type: 'crypto' },
+  { code: 'DOGE', name: 'Dogecoin', symbol: 'Ð', type: 'crypto' },
+  { code: 'LTC', name: 'Litecoin', symbol: 'Ł', type: 'crypto' },
+  { code: 'DOT', name: 'Polkadot', symbol: 'DOT', type: 'crypto' },
+  { code: 'AVAX', name: 'Avalanche', symbol: 'AVAX', type: 'crypto' },
+  { code: 'MATIC', name: 'Polygon', symbol: 'MATIC', type: 'crypto' },
+  { code: 'LINK', name: 'Chainlink', symbol: 'LINK', type: 'crypto' },
+  { code: 'UNI', name: 'Uniswap', symbol: 'UNI', type: 'crypto' },
+  { code: 'ATOM', name: 'Cosmos', symbol: 'ATOM', type: 'crypto' },
+  { code: 'XLM', name: 'Stellar', symbol: 'XLM', type: 'crypto' },
+  { code: 'BCH', name: 'Bitcoin Cash', symbol: 'BCH', type: 'crypto' },
+  { code: 'ETC', name: 'Ethereum Classic', symbol: 'ETC', type: 'crypto' },
+  { code: 'FIL', name: 'Filecoin', symbol: 'FIL', type: 'crypto' },
+  { code: 'TRX', name: 'TRON', symbol: 'TRX', type: 'crypto' },
+  { code: 'EOS', name: 'EOS', symbol: 'EOS', type: 'crypto' },
+  { code: 'SHIB', name: 'Shiba Inu', symbol: 'SHIB', type: 'crypto' }
 ];

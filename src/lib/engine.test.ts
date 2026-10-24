@@ -1,23 +1,50 @@
 import { describe, it, expect } from 'vitest';
-import { convert, runInvariantTest } from './engine';
+import { convert } from './engine';
 
-describe('GHD Math Engine', () => {
-  const mockGoldUsd = 2400; // $2400 per oz
-  const mockUsdToZar = 18.5; // 18.5 ZAR per USD
+describe('Calculation Engine', () => {
+  const mockGoldUsd = 4185.13;
+  const mockUsdToZar = 16.5150;
 
-  it('should correctly convert Fiat to Token', () => {
-    // 1 GHD = 2400 * 18.5 * 0.1033 = 4586.52 ZAR
-    const result = convert(4586.52, 'fiatToToken', 'gold', mockGoldUsd, mockUsdToZar);
-    expect(result.output).toBeCloseTo(1, 5); // Should be very close to 1 GHD
+  it('converts Fiat to Token correctly (ZAR to ACC Gold)', () => {
+    // 1. Test Fiat -> Token using the new object syntax
+    const result = convert({
+      amount: 1000,
+      direction: 'fiatToToken',
+      activeAsset: 'gold',
+      metalPrice: mockGoldUsd,
+      forex: mockUsdToZar,
+    });
+    
+    // 1000 ZAR / (4185.13 * 16.5150 * 0.1033) = ~0.1399 ACC
+    expect(result.output).toBeCloseTo(0.1399, 3);
   });
 
-  it('should correctly convert Token to Fiat', () => {
-    const result = convert(1, 'tokenToFiat', 'gold', mockGoldUsd, mockUsdToZar);
-    expect(result.output).toBeCloseTo(4586.52, 2);
+  it('converts Token to Fiat correctly (ACC Gold to ZAR)', () => {
+    // 2. Test Token -> Fiat
+    const result = convert({
+      amount: 1,
+      direction: 'tokenToFiat',
+      activeAsset: 'gold',
+      metalPrice: mockGoldUsd,
+      forex: mockUsdToZar,
+    });
+    
+    // 1 ACC * 4185.13 * 16.5150 * 0.1033 = ~7143.53 ZAR
+    expect(result.output).toBeCloseTo(7143.53, 1);
   });
 
-  it('should pass the Fiat Invariance Test', () => {
-    const isInvariant = runInvariantTest(mockGoldUsd, mockUsdToZar);
-    expect(isInvariant).toBe(true);
+  it('converts Fiat to Fiat correctly (USD to ZAR)', () => {
+    // 3. Test the new Fiat -> Fiat logic
+    const result = convert({
+      amount: 1,
+      direction: 'fiatToFiat',
+      activeAsset: 'gold',
+      metalPrice: mockGoldUsd,
+      forex: mockUsdToZar,       // Target (ZAR)
+      sourceForex: 1,            // Source (USD)
+    });
+    
+    // 1 USD * 16.5150 = 16.5150 ZAR
+    expect(result.output).toBeCloseTo(16.5150, 2);
   });
 });

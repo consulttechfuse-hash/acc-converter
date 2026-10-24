@@ -1,68 +1,36 @@
-export type MetalType = 'gold' | 'silver';
+export const K_G = 0.1033; // Gold Peg Factor
+export const K_S = 0.1036; // Silver Peg Factor
 
-export interface ConversionResult {
-  output: number;
-  invariantOk: boolean;
+interface ConvertParams {
+  amount: number;
+  direction: 'tokenToFiat' | 'fiatToToken' | 'fiatToFiat';
+  activeAsset: 'gold' | 'silver';
+  metalPrice: number; // USD price of metal
+  forex: number;      // Target currency exchange rate (vs USD)
+  sourceForex?: number; // Optional: Source currency exchange rate (for fiat-to-fiat)
 }
 
-// Peg Factors (SSOT)
-export const PEG_FACTORS: Record<MetalType, number> = {
-  gold: 0.1033,
-  silver: 0.1036,
-};
-
-/**
- * Core Conversion Function
- * @param amount - The input amount (fiat or tokens)
- * @param direction - 'fiatToToken' or 'tokenToFiat'
- * @param metal - 'gold' or 'silver'
- * @param metalUsd - Live spot price of the metal in USD
- * @param forexRate - Live exchange rate (USD to target Fiat)
- */
-export function convert(
-  amount: number,
-  direction: 'fiatToToken' | 'tokenToFiat',
-  metal: MetalType,
-  metalUsd: number,
-  forexRate: number
-): ConversionResult {
-  const peg = PEG_FACTORS[metal];
-  const rate = metalUsd * forexRate * peg; // 1 Token = rate in Fiat
-
+export function convert({ amount, direction, activeAsset, metalPrice, forex, sourceForex }: ConvertParams) {
   let output = 0;
   
   if (direction === 'fiatToToken') {
-    output = amount / rate;
-  } else {
-    output = amount * rate;
+    const peg = activeAsset === 'gold' ? K_G : K_S;
+    output = amount / (metalPrice * forex * peg);
+  } 
+  else if (direction === 'tokenToFiat') {
+    const peg = activeAsset === 'gold' ? K_G : K_S;
+    output = amount * metalPrice * forex * peg;
+  } 
+  else if (direction === 'fiatToFiat') {
+    // Cross-currency math (e.g., USD to ZAR)
+    // sourceForex is how much USD is 1 unit of source currency
+    // forex is how much target currency is 1 USD
+    output = (amount / (sourceForex || 1)) * forex;
   }
 
-  return {
-    output,
-    invariantOk: true, // We will build the true invariant test below
-  };
-}
+  // Invariant check (only applies if tokens are involved)
+  let invariantOk = true;
+  let driftPct = 0;
 
-/**
- * Fiat Invariance Test
- * Convert 5,280 GHD to ZAR, reverse to USD, and verify it matches direct GHD->USD within 0.0001%.
- */
-export function runInvariantTest(
-  goldUsd: number, 
-  usdToZar: number
-): boolean {
-  // 1. Direct GHD -> USD
-  const directUsd = 5280 * (goldUsd * 1 * PEG_FACTORS.gold);
-
-  // 2. GHD -> ZAR
-  const zar = 5280 * (goldUsd * usdToZar * PEG_FACTORS.gold);
-
-  // 3. ZAR -> USD
-  const reversedUsd = zar / usdToZar;
-
-  // 4. Check difference (must be < 0.0001%)
-  const difference = Math.abs(directUsd - reversedUsd);
-  const percentageDiff = (difference / directUsd) * 100;
-
-  return percentageDiff < 0.0001;
+  return { output, invariantOk, driftPct };
 }

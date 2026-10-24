@@ -26,18 +26,33 @@ function App() {
 
   const getForex = (currency: string) => market.forexRates[currency] || 1;
 
-  const isSendingToken = sendCurrency === 'ACC' || sendCurrency === 'ACC_SILVER';
-  const direction = isSendingToken ? 'tokenToFiat' : 'fiatToToken';
-  const fiatCurrency = isSendingToken ? receiveCurrency : sendCurrency;
+  const isSendToken = sendCurrency === 'ACC' || sendCurrency === 'ACC_SILVER';
+  const isReceiveToken = receiveCurrency === 'ACC' || receiveCurrency === 'ACC_SILVER';
+
+  // Determine calculation direction
+  let direction: 'tokenToFiat' | 'fiatToToken' | 'fiatToFiat' = 'fiatToFiat';
+  if (isSendToken) direction = 'tokenToFiat';
+  else if (isReceiveToken) direction = 'fiatToToken';
+  else direction = 'fiatToFiat';
+
+  const sourceFiat = isSendToken ? receiveCurrency : sendCurrency;
+  const targetFiat = isSendToken ? sendCurrency : receiveCurrency;
   
-  const selectedFiat = CURRENCIES.find(c => c.code === fiatCurrency);
-  
+  const selectedSendFiat = CURRENCIES.find(c => c.code === sourceFiat);
+  const selectedReceiveFiat = CURRENCIES.find(c => c.code === targetFiat);
+
   const metalPrice = activeAsset === 'gold' ? market.goldUsd : market.silverUsd;
-  const forex = getForex(fiatCurrency);
+  const targetForex = getForex(targetFiat);
+  const sourceForex = getForex(sourceFiat);
   
-  const result = convert(
-    Number(sendAmount) || 0, direction, activeAsset, metalPrice, forex
-  );
+  const result = convert({
+    amount: Number(sendAmount) || 0,
+    direction,
+    activeAsset,
+    metalPrice,
+    forex: targetForex,
+    sourceForex: direction === 'fiatToFiat' ? sourceForex : undefined
+  });
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result.output.toFixed(2));
@@ -60,6 +75,14 @@ function App() {
     if (val.length > 9) return "text-4xl";
     return "text-[42px]";
   };
+
+  // Toggle logic for the ACC asset badge
+  const renderAssetToggle = () => (
+    <div className="flex bg-black/10 rounded-full p-1">
+      <button onClick={() => setActiveAsset('gold')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'gold' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Gold</button>
+      <button onClick={() => setActiveAsset('silver')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'silver' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Silver</button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#E5E5EA] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-black/10">
@@ -94,25 +117,22 @@ function App() {
 
           <div className="w-full relative z-10">
             
+            {/* TOP CARD (SEND) */}
             <div className="bg-[#afe059] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mb-2 relative z-20 transition-all">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2.5">
-                  {!isSendingToken && selectedFiat?.countryCode && (
+                  {selectedSendFiat?.countryCode && (
                     <div className="w-9 h-9 bg-white/40 rounded-full flex items-center justify-center overflow-hidden shrink-0 border border-black/5">
-                      <CircleFlag countryCode={selectedFiat.countryCode} height="24" />
+                      <CircleFlag countryCode={selectedSendFiat.countryCode} height="24" />
                     </div>
                   )}
                   <div className="w-32">
+                    {/* Enabled Dropdown */}
                     <CurrencyPicker selected={sendCurrency} onChange={setSendCurrency} isDarkTheme={false} />
                   </div>
                 </div>
 
-                {isSendingToken ? (
-                  <div className="flex bg-black/10 rounded-full p-1">
-                    <button onClick={() => setActiveAsset('gold')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'gold' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Gold</button>
-                    <button onClick={() => setActiveAsset('silver')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'silver' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Silver</button>
-                  </div>
-                ) : (
+                {isSendToken ? renderAssetToggle() : (
                   <div className="flex items-center gap-1.5 text-black/40">
                     <Lock size={12} />
                     <span className="text-xs font-medium">Currency</span>
@@ -132,6 +152,7 @@ function App() {
               </div>
             </div>
 
+            {/* SWAP BUTTON */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
               <button 
                 onClick={swap} 
@@ -141,25 +162,22 @@ function App() {
               </button>
             </div>
 
+            {/* BOTTOM CARD (RECEIVE) */}
             <div className="bg-[#b9d6f1] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mt-2 relative z-10 transition-all">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2.5">
-                  {isSendingToken && selectedFiat?.countryCode && (
+                  {selectedReceiveFiat?.countryCode && (
                     <div className="w-9 h-9 bg-white/40 rounded-full flex items-center justify-center overflow-hidden shrink-0 border border-black/5">
-                      <CircleFlag countryCode={selectedFiat.countryCode} height="24" />
+                      <CircleFlag countryCode={selectedReceiveFiat.countryCode} height="24" />
                     </div>
                   )}
                   <div className="w-32">
-                    <CurrencyPicker selected={receiveCurrency} onChange={setReceiveCurrency} disabled={true} isDarkTheme={false} />
+                    {/* ENABLED DROPDOWN: Removed disabled={true} */}
+                    <CurrencyPicker selected={receiveCurrency} onChange={setReceiveCurrency} isDarkTheme={false} />
                   </div>
                 </div>
 
-                {!isSendingToken ? (
-                  <div className="flex bg-black/10 rounded-full p-1">
-                    <button onClick={() => setActiveAsset('gold')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'gold' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Gold</button>
-                    <button onClick={() => setActiveAsset('silver')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeAsset === 'silver' ? 'bg-white shadow-sm text-black' : 'text-black/50'}`}>Silver</button>
-                  </div>
-                ) : (
+                {isReceiveToken ? renderAssetToggle() : (
                   <div className="flex items-center gap-1.5 text-black/40">
                     <Lock size={12} />
                     <span className="text-xs font-medium">Computed</span>

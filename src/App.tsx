@@ -1,5 +1,5 @@
 import { ArrowDownUp, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useExchangeStore } from './lib/exchange-store';
 import { useMarketData } from './lib/market';
 import { convert } from './lib/engine';
@@ -13,11 +13,21 @@ function App() {
     setSendAmount, setSendCurrency, swap, setReceiveCurrency
   } = useExchangeStore();
   
-  const { data: market, isLoading, refetch, isFetching } = useMarketData();
+  const { data: market, isLoading, refetch, isFetching, dataUpdatedAt } = useMarketData();
   const [copied, setCopied] = useState(false);
 
   const [sendTab, setSendTab] = useState<'fiat' | 'acc' | 'crypto'>('fiat');
   const [receiveTab, setReceiveTab] = useState<'fiat' | 'acc' | 'crypto'>('acc');
+
+  // LED Pulse Logic
+  const [ledPulse, setLedPulse] = useState(false);
+  useEffect(() => {
+    if (dataUpdatedAt) {
+      setLedPulse(true);
+      const timer = setTimeout(() => setLedPulse(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [dataUpdatedAt]);
 
   if (isLoading || !market) {
     return (
@@ -71,13 +81,36 @@ function App() {
   const selectedSendFiat = CURRENCIES.find(c => c.code === sendCurrency);
   const selectedReceiveFiat = CURRENCIES.find(c => c.code === receiveCurrency);
 
+  // --- NEW LIVE TICKER LOGIC ---
+  // We calculate the exact cross-rate the user is looking at.
+  // 1. Get the USD value of the Top Card asset
+  // 2. Get the USD value of the Bottom Card asset
+  // 3. The cross rate is Top / Bottom
+  
+  const getAssetUsdValue = (tab: string, code: string, assetType: 'gold' | 'silver') => {
+    if (tab === 'fiat') return 1 / (market.forexRates[code] || 1);
+    if (tab === 'crypto') return market.cryptoRates[code] || 0;
+    if (tab === 'acc') {
+      const peg = assetType === 'silver' ? 0.1033 : 0.1000;
+      const metal = assetType === 'silver' ? market.silverUsd : market.goldUsd;
+      return metal * peg;
+    }
+    return 0;
+  };
+
+  const sourceUsd = getAssetUsdValue(sendTab, sendCurrency, finalAsset);
+  const targetUsd = getAssetUsdValue(receiveTab, receiveCurrency, finalAsset);
+  
+  // The final live rate (e.g., 1 AUD = X ZAR)
+  const liveCrossRate = targetUsd > 0 ? (sourceUsd / targetUsd) : 0;
+
   return (
     <div className="min-h-screen bg-[#E5E5EA] flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-black/10">
       <div className="w-full max-w-[390px] h-[85vh] max-h-[844px] rounded-[48px] border-[14px] border-[#343d46] shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden bg-[#fff3d7] relative flex flex-col">
         
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-8 pb-6 px-4 relative">
+        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col items-center pt-6 pb-6 px-4 relative">
           
-          <header className="w-full flex items-center justify-between mb-6 relative z-10">
+          <header className="w-full flex items-center justify-between mb-4 relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-black text-white rounded-[12px] flex items-center justify-center font-bold text-xl shadow-sm">A</div>
               <div>
@@ -90,19 +123,44 @@ function App() {
             </button>
           </header>
 
+          {/* LIVE MARKET TICKER */}
+          <div className="w-full bg-white/40 border border-black/5 rounded-2xl p-3 mb-4 flex items-center justify-between shadow-sm relative z-10">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${ledPulse ? 'bg-green-500 scale-150 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-green-500/50'}`}></div>
+              <span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Live</span>
+            </div>
+            
+            <div className="flex gap-3 text-xs font-medium items-end">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] text-black/40 uppercase tracking-wider">Gold (oz)</span>
+                <span className="text-black font-semibold">${market.goldUsd.toFixed(2)}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] text-black/40 uppercase tracking-wider">Silver (oz)</span>
+                <span className="text-black font-semibold">${market.silverUsd.toFixed(2)}</span>
+              </div>
+              <div className="w-px h-6 bg-black/10 mx-1"></div>
+              {/* DYNAMIC CROSS RATE */}
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] text-black/40 uppercase tracking-wider">
+                  {sendCurrency}/{receiveCurrency}
+                </span>
+                <span className="text-blue-600 font-bold">{liveCrossRate.toFixed(4)}</span>
+              </div>
+            </div>
+          </div>
+
           <div className="w-full relative z-10">
             
             {/* TOP CARD */}
             <div className="bg-[#afe059] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mb-2 relative z-20 transition-all">
               
-              {/* Flag positioned top right */}
               {selectedSendFiat?.countryCode && sendTab === 'fiat' && (
                 <div className="absolute top-6 right-6 w-8 h-8 bg-white/40 rounded-full flex items-center justify-center overflow-hidden border border-black/5">
                   <CircleFlag countryCode={selectedSendFiat.countryCode} height="20" />
                 </div>
               )}
 
-              {/* Full width picker */}
               <div className="w-full pr-12">
                 <CurrencyPicker 
                   selected={sendCurrency} 
@@ -142,14 +200,12 @@ function App() {
             {/* BOTTOM CARD */}
             <div className="bg-[#b9d6f1] rounded-[24px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] mt-2 relative z-10 transition-all">
               
-              {/* Flag positioned top right */}
               {selectedReceiveFiat?.countryCode && receiveTab === 'fiat' && (
                 <div className="absolute top-6 right-6 w-8 h-8 bg-white/40 rounded-full flex items-center justify-center overflow-hidden border border-black/5">
                   <CircleFlag countryCode={selectedReceiveFiat.countryCode} height="20" />
                 </div>
               )}
 
-              {/* Full width picker */}
               <div className="w-full pr-12">
                 <CurrencyPicker 
                   selected={receiveCurrency} 

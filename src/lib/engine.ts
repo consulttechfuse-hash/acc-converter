@@ -1,5 +1,6 @@
-export const K_G = 0.1033;
-export const K_S = 0.1036;
+// The exact Anchor Weights derived from the live GHD Calculator
+export const K_G = 0.1000; // Gold Anchor (Exactly 1/10th of an ounce)
+export const K_S = 0.1033; // Silver Anchor
 
 interface ConvertParams {
   amount: number;
@@ -22,10 +23,8 @@ export function convert(params: ConvertParams) {
   // 1. Get the USD value of 1 unit of the source asset
   const getUsdValue = (type: string, code: string) => {
     if (type === 'fiat') {
-      // FIX: If we don't have the rate, we shouldn't default to 1. 
-      // We should throw an error or return 0 to prevent 1:1 ghost conversions.
       const rate = market.forexRates[code];
-      if (!rate) return 0; 
+      if (!rate) return 0; // Prevents 1:1 ghost conversions
       return 1 / rate;
     }
     
@@ -34,8 +33,9 @@ export function convert(params: ConvertParams) {
     }
     
     if (type === 'acc') {
-      const peg = (code === 'ACC_SILVER' || activeAsset === 'silver') ? K_S : K_G;
-      const metal = (code === 'ACC_SILVER' || activeAsset === 'silver') ? market.silverUsd : market.goldUsd;
+      const isSilver = code === 'ACC_SILVER' || activeAsset === 'silver';
+      const peg = isSilver ? K_S : K_G;
+      const metal = isSilver ? market.silverUsd : market.goldUsd;
       return metal * peg;
     }
     
@@ -45,7 +45,7 @@ export function convert(params: ConvertParams) {
   const sourceUsdValue = getUsdValue(sendType, sendCurrency);
   const targetUsdValue = getUsdValue(receiveType, receiveCurrency);
 
-  // If we couldn't find the rate for either currency, return 0 (prevents 1:1 ghost math)
+  // If we couldn't find the rate for either currency, return 0
   if (sourceUsdValue === 0 || targetUsdValue === 0) {
     return { output: 0 };
   }

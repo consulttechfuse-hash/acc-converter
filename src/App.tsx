@@ -81,12 +81,7 @@ function App() {
   const selectedSendFiat = CURRENCIES.find(c => c.code === sendCurrency);
   const selectedReceiveFiat = CURRENCIES.find(c => c.code === receiveCurrency);
 
-  // --- NEW LIVE TICKER LOGIC ---
-  // We calculate the exact cross-rate the user is looking at.
-  // 1. Get the USD value of the Top Card asset
-  // 2. Get the USD value of the Bottom Card asset
-  // 3. The cross rate is Top / Bottom
-  
+  // --- LIVE TICKER LOGIC ---
   const getAssetUsdValue = (tab: string, code: string, assetType: 'gold' | 'silver') => {
     if (tab === 'fiat') return 1 / (market.forexRates[code] || 1);
     if (tab === 'crypto') return market.cryptoRates[code] || 0;
@@ -100,8 +95,6 @@ function App() {
 
   const sourceUsd = getAssetUsdValue(sendTab, sendCurrency, finalAsset);
   const targetUsd = getAssetUsdValue(receiveTab, receiveCurrency, finalAsset);
-  
-  // The final live rate (e.g., 1 AUD = X ZAR)
   const liveCrossRate = targetUsd > 0 ? (sourceUsd / targetUsd) : 0;
 
   return (
@@ -140,7 +133,6 @@ function App() {
                 <span className="text-black font-semibold">${market.silverUsd.toFixed(2)}</span>
               </div>
               <div className="w-px h-6 bg-black/10 mx-1"></div>
-              {/* DYNAMIC CROSS RATE */}
               <div className="flex flex-col items-end">
                 <span className="text-[9px] text-black/40 uppercase tracking-wider">
                   {sendCurrency}/{receiveCurrency}
@@ -229,9 +221,19 @@ function App() {
 
           </div>
 
-          <footer className="mt-auto pt-6 w-full text-center text-[10px] text-black/40 font-medium flex flex-col gap-1 relative z-10">
-            <p>ACC All Currency Converter is a free infor. Rates are indicative only.</p>
-            <p className="mt-1 opacity-70">© {new Date().getFullYear()} All rights reserved.</p>
+          <footer className="mt-auto pt-6 w-full text-center text-[10px] text-black/40 font-medium flex flex-col items-center gap-3 relative z-10">
+            {/* EXPLORE LINK */}
+            <a 
+              href="/explore.html" 
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/50 hover:bg-white/80 border border-black/5 rounded-full shadow-sm text-black/70 hover:text-black transition-all text-xs font-semibold"
+            >
+              <span>🌍</span> Explore Global Finance Systems
+            </a>
+            
+            <div className="flex flex-col gap-1 mt-1">
+              <p>ACC All Currency Converter is a free infor. Rates are indicative only.</p>
+              <p className="opacity-70">© {new Date().getFullYear()} All rights reserved.</p>
+            </div>
           </footer>
         </div>
       </div>

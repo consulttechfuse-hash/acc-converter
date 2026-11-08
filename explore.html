@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Finance Systems · Explore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --outer-bg:#E5E5EA;
+    --bezel:#343D46;
+    --app-bg:#FFF3D7;
+    --card-send:#AFE059;
+    --card-receive:#B9D6F1;
+    --text:#000000;
+    --muted:#6A6A6A;
+    --muted-2:#A0A0A0;
+    --swap-btn:#000000;
+    --ticker-bg:rgba(255,255,255,.4);
+    --led:#22C55E;
+    --glass:#FFFFFF;
+    --radius:22px;
+    --radius-sm:14px;
+    --shadow-card:0 8px 30px rgba(0,0,0,.08);
+    --shadow-glass:0 4px 14px rgba(0,0,0,.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
+    background:var(--outer-bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+    overflow:hidden;
+  }
+  .mono{font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+  /* ═══ PHONE FRAME ═══ */
+  .device{
+    width:100%;max-width:440px;
+    height:min(920px, calc(100dvh - 40px));
+    background:var(--bezel);
+    border-radius:46px;
+    padding:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.22), 0 8px 24px rgba(0,0,0,.12);
+    position:relative;
+  }
+  .device::before{
+    content:'';position:absolute;top:24px;left:50%;transform:translateX(-50%);
+    width:100px;height:24px;background:var(--bezel);border-radius:0 0 16px 16px;z-index:20;
+  }
+  .screen{
+    background:var(--app-bg);
+    border-radius:34px;
+    height:100%;
+    overflow:hidden;
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    position:relative;
+  }
+
+  /* ═══ BACK BUTTON ═══ */
+  .back-btn-container {
+    position: absolute;
+    top: 40px;
+    left: 20px;
+    z-index: 100;
+  }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--glass);
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: var(--shadow-glass);
+  }
+
+  /* ═══ TICKER ═══ */
+  .ticker{
+    background:var(--ticker-bg);
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid rgba(0,0,0,.05);
+    padding:10px 20px;
+    display:flex;align-items:center;gap:10px;
+    font-size:11px;font-weight:600;letter-spacing:.3px;
+    overflow:hidden;white-space:nowrap;
+    position:relative;z-index:5;
+  }
+  .led{
+    width:8px;height:8px;border-radius:50%;background:var(--led);
+    box-shadow:0 0 0 0 rgba(34,197,94,.6);
+    animation:pulse 2s infinite;flex-shrink:0;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}
+    70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}
+    100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}
+  }
+  .ticker-label{color:var(--muted);font-weight:500;flex-shrink:0}
+  .ticker-track{display:flex;gap:18px;animation:scroll 30s linear infinite;padding-left:20px}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ticker-item{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500}
+  .ticker-item.up{color:#15803D}
+  .ticker-item.down{color:#B91C1C}
+
+  /* ═══ STAGE ═══ */
+  .stage{position:relative;overflow:hidden;min-height:0}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    overflow-y:auto;overflow-x:hidden;
+    padding:22px 20px 24px;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent;
+  }
+  .slide::-webkit-scrollbar{width:6px}
+  .slide::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:6px}
+  .slide.active{display:block;animation:slideIn .28s cubic-bezier(.22,.61,.36,1)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ═══ TYPOGRAPHY ═══ */
+  .kicker{
+    font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:8px;
+  }
+  h1.title{font-size:26px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px}
+  .desc{font-size:13.5px;color:var(--muted);line-height:1.55;margin-bottom:20px}
+  h2.section{font-size:15px;font-weight:700;letter-spacing:-.3px;margin:0 0 12px}
+
+  /* ═══ CARDS (ACC style) ═══ */
+  .card{
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow-card);
+    position:relative;
+  }
+  .card.lime{background:var(--card-send);color:var(--text)}
+  .card.blue{background:var(--card-receive);color:var(--text)}
+  .card.cream{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.05);color:var(--text)}
+  .card.glass{background:var(--glass);color:var(--text);box-shadow:var(--shadow-glass)}
+  .card h3{font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-.2px}
+  .card p{font-size:12.5px;color:var(--muted);line-height:1.55}
+  .card.lime p,.card.blue p{color:rgba(0,0,0,.62)}
+  .card .icon{font-size:26px;margin-bottom:12px}
+  .card .tag{
+    display:inline-block;margin-top:12px;
+    font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:999px;
+    background:rgba(0,0,0,.08);color:rgba(0,0,0,.7);
+    letter-spacing:.2px;
+  }
+  .card.glass .tag,.card.cream .tag{background:rgba(0,0,0,.06);color:var(--muted)}
+  .card-grid{display:grid;grid-template-columns:1fr;gap:12px}
+  .card-grid.two{grid-template-columns:1fr 1fr}
+  .card-grid.three{grid-template-columns:1fr}
+
+  /* ═══ COVER ═══ */
+  .cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100%;padding:20px 0}
+  .cover .globe{font-size:56px;margin-bottom:18px;animation:float 4s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .cover h1{font-size:32px;font-weight:800;letter-spacing:-1.2px;line-height:1.08;margin-bottom:14px}
+  .cover h1 span{color:#15803D}
+  .cover .sub{font-size:14px;color:var(--muted);max-width:320px;line-height:1.5;margin-bottom:28px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:32px}
+  .pill{
+    background:var(--glass);
+    padding:7px 14px;border-radius:999px;
+    font-size:11.5px;font-weight:600;color:var(--text);
+    box-shadow:var(--shadow-glass);
+  }
+  .start-btn{
+    background:var(--swap-btn);color:var(--app-bg);
+    border:3px solid var(--app-bg);
+    padding:14px 32px;border-radius:999px;
+    font-size:15px;font-weight:700;letter-spacing:.2px;
+    cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  .start-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.32)}
+  .start-btn:active{transform:translateY(0)}
+
+  /* ═══ FLOW STEPS ═══ */
+  .flow-steps{display:flex;flex-direction:column;gap:8px}
+  .flow-step{
+    display:flex;align-items:center;gap:12px;
+    background:var(--glass);
+    border-radius:var(--radius-sm);
+    padding:12px 14px;
+    box-shadow:var(--shadow-glass);
+  }
+  .step-bubble{
+    width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;flex-shrink:0;
+    background:var(--app-bg);
+  }
+  .step-body{flex:1;min-width:0}
+  .step-label{font-size:12.5px;font-weight:700;margin-bottom:2px}
+  .step-sub{font-size:11px;color:var(--muted);line-height:1.4}
+
+  /* ═══ NOTE BOX ═══ */
+  .note{
+    background:var(--glass);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    margin-top:16px;
+    font-size:12px;color:var(--muted);line-height:1.55;
+    box-shadow:var(--shadow-glass);
+  }
+  .note strong{color:var(--text);font-weight:700}
+
+  /* ═══ STAT ROWS ═══ */
+  .stat-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid rgba(0,0,0,.06);
+    font-size:12.5px;
+  }
+  .stat-row:last-child{border-bottom:none}
+  .stat-row .lbl{color:var(--muted);font-weight:500}
+  .stat-row .val{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+  /* ═══ BIG NUMBERS ═══ */
+  .big-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:32px;font-weight:700;letter-spacing:-1.2px;
+    line-height:1;margin-bottom:6px;
+  }
+  .big-lbl{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.2px}
+
+  /* ═══ M-TIERS ═══ */
+  .m-tier{
+    display:flex;align-items:center;gap:14px;
+    background:var(--glass);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    margin-bottom:8px;
+    box-shadow:var(--shadow-glass);
+  }
+  .m-badge{
+    width:44px;height:44px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;font-weight:800;
+    flex-shrink:0;
+  }
+  .m-body{flex:1;min-width:0}
+  .m-body h4{font-size:13px;font-weight:700;margin-bottom:3px}
+  .m-body p{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .m-size{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.4px;flex-shrink:0}
+
+  /* ═══ RISK BARS ═══ */
+  .risk-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .risk-lbl{font-size:11px;color:var(--muted);width:90px;flex-shrink:0;font-weight:500}
+  .risk-track{flex:1;height:6px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden}
+  .risk-fill{height:100%;border-radius:4px;transition:width .4s ease}
+
+  /* ═══ TAKEAWAYS ═══ */
+  .takeaways{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
+  .takeaway{
+    background:var(--glass);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    display:flex;gap:12px;align-items:flex-start;
+    box-shadow:var(--shadow-glass);
+    text-align:left;
+  }
+  .takeaway .n{
+    font-family:'JetBrains Mono',monospace;
+    font-size:20px;font-weight:800;color:#15803D;
+    line-height:1;flex-shrink:0;opacity:.8;
+  }
+  .takeaway h4{font-size:12.5px;font-weight:700;margin-bottom:3px}
+  .takeaway p{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+  /* ═══ NAV (bottom bar inside phone) ═══ */
+  .navbar{
+    background:var(--ticker-bg);
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-top:1px solid rgba(0,0,0,.05);
+    padding:12px 16px 16px;
+    display:flex;flex-direction:column;gap:10px;
+    position:relative;z-index:5;
+  }
+  .progress-track{width:100%;height:3px;background:rgba(0,0,0,.08);border-radius:999px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--swap-btn);border-radius:999px;transition:width .35s cubic-bezier(.22,.61,.36,1)}
+  .nav-buttons{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .navbtn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--glass);
+    border:none;
+    color:var(--text);
+    padding:11px 18px;border-radius:999px;
+    font-size:13px;font-weight:700;letter-spacing:.1px;
+    cursor:pointer;transition:all .18s ease;
+    box-shadow:var(--shadow-glass);
+    min-width:80px;
+  }
+  .navbtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.14)}
+  .navbtn:active:not(:disabled){transform:translateY(0)}
+  .navbtn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+  .navbtn.primary{background:var(--swap-btn);color:var(--app-bg);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .navbtn.primary:hover:not(:disabled){box-shadow:0 10px 24px rgba(0,0,0,.32)}
+  .counter{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;font-weight:600;color:var(--muted);
+    letter-spacing:.3px;
+    min-width:56px;text-align:center;
+  }
+
+  /* ═══ RESPONSIVE ═══ */
+  @media (max-width:480px){
+    body{padding:0}
+    .device{
+      max-width:100%;height:100dvh;
+      border-radius:0;padding:0;
+      box-shadow:none;
+    }
+    .device::before{display:none}
+    .screen{border-radius:0}
+    .cover h1{font-size:28px}
+    .back-btn-container { top: 20px; left: 15px; }
+  }
+  @media (max-height:700px) and (min-width:480px){
+    .device{max-width:400px}
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="screen">
+    
+    <!-- NEW: BACK BUTTON -->
+    <div class="back-btn-container">
+      <a href="/" class="back-btn">
+        ← Back to Converter
+      </a>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker">
+      <div class="led"></div>
+      <span class="ticker-label">LIVE</span>
+      <div style="flex:1;overflow:hidden;position:relative">
+        <div class="ticker-track">
+          <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+          <span class="ticker-item down">BTC $67,420 ▼</span>
+          <span class="ticker-item up">EUR/USD 1.087 ▲</span>
+          <span class="ticker-item down">GOLD 2,341 ▼</span>
+          <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+          <span class="ticker-item down">BTC $67,420 ▼</span>
+          <span class="ticker-item up">EUR/USD 1.087 ▲</span>
+          <span class="ticker-item down">GOLD 2,341 ▼</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE -->
+    <main class="stage" id="stage">
+
+      <!-- 1 COVER -->
+      <section class="slide active">
+        <div class="cover">
+          <div class="globe">🌍</div>
+          <h1>How <span>Money</span><br>&amp; Payments Work</h1>
+          <p class="sub">Explore the systems that move money — banks, cards, apps, crypto, and the global rails.</p>
+          <div class="pills">
+            <span class="pill">💳 Cards</span>
+            <span class="pill">🏦 Banks</span>
+            <span class="pill">₿ Crypto</span>
+            <span class="pill">🌐 Global</span>
+          </div>
+          <button class="start-btn" onclick="goTo(1)">Start Exploring →</button>
+        </div>
+      </section>
+
+      <!-- 2 WHAT IS MONEY -->
+      <section class="slide">
+        <div class="kicker">Explore · 01</div>
+        <h1 class="title">What is Money?</h1>
+        <p class="desc">Money is anything widely accepted as payment. Today, most money is just numbers in a computer — not gold, not paper.</p>
+        <div class="card-grid">
+          <div class="card lime">
+            <div class="icon">🏛️</div>
+            <h3>Central Bank Money</h3>
+            <p>Cash notes and coins you can hold. Also the digital reserves banks keep at the central bank. The most trusted type — it's the government's money.</p>
+            <span class="tag">Most trusted</span>
+          </div>
+          <div class="card blue">
+            <div class="icon">💳</div>
+            <h3>Bank Account Money</h3>
+            <p>The balance in your bank app. Created when banks make loans — when a bank lends you R100,000, it types that number into your account.</p>
+            <span class="tag">Most common</span>
+          </div>
+          <div class="card glass">
+            <div class="icon">📜</div>
+            <h3>Fiat Money</h3>
+            <p>Money backed by law and trust — not gold. Its value comes from government declaring it legal tender and central banks managing the economy.</p>
+            <span class="tag">Government-backed</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 TWO TIER -->
+      <section class="slide">
+        <div class="kicker">Explore · 02</div>
+        <h1 class="title">The Two-Tier Banking System</h1>
+        <p class="desc">Banks don't work in isolation. There's a hierarchy — central bank at the top, commercial banks in the middle, and you at the bottom.</p>
+        <div class="card lime" style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="font-size:34px">🏛️</div>
+            <div style="flex:1">
+              <h3 style="margin-bottom:4px">Central Bank</h3>
+              <p>The bank's bank. Issues currency, controls interest rates, acts as a safety net. Banks keep reserves here.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-grid two" style="margin-bottom:10px">
+          <div class="card cream" style="padding:14px">
+            <div style="font-size:22px;margin-bottom:8px">🏦</div>
+            <h3 style="font-size:12.5px;margin-bottom:5px">Commercial Banks</h3>
+            <p style="font-size:11px">Standard Bank, FNB, Absa. Take deposits, lend, licensed by the central bank.</p>
+          </div>
+          <div class="card cream" style="padding:14px">
+            <div style="font-size:22px;margin-bottom:8px">🏢</div>
+            <h3 style="font-size:12.5px;margin-bottom:5px">Government</h3>
+            <p style="font-size:11px">Collects taxes, pays for services, sets the rules. Central bank implements policy.</p>
+          </div>
+        </div>
+        <div class="card blue">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="font-size:30px">👤</div>
+            <div style="flex:1">
+              <h3 style="margin-bottom:4px">You</h3>
+              <p>You bank with commercial banks, not the central bank directly. Payments move through the layers above before settling.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 PAYMENT FLOW -->
+      <section class="slide">
+        <div class="kicker">Explore · 03</div>
+        <h1 class="title">How a Payment Moves</h1>
+        <p class="desc">When you tap your card or send an EFT, a lot happens invisibly in milliseconds.</p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="step-bubble">📱</div><div class="step-body"><div class="step-label">You Pay</div><div class="step-sub">Tap card, app, or checkout</div></div></div>
+          <div class="flow-step"><div class="step-bubble">🔍</div><div class="step-body"><div class="step-label">Processor</div><div class="step-sub">Checks fraud, routes transaction</div></div></div>
+          <div class="flow-step"><div class="step-bubble">🏦</div><div class="step-body"><div class="step-label">Your Bank</div><div class="step-sub">Checks funds, approves or declines</div></div></div>
+          <div class="flow-step"><div class="step-bubble">⚖️</div><div class="step-body"><div class="step-label">Clearing</div><div class="step-sub">Banks agree on who owes what</div></div></div>
+          <div class="flow-step"><div class="step-bubble">✅</div><div class="step-body"><div class="step-label">Settlement</div><div class="step-sub">Real money moves via central bank reserves</div></div></div>
+        </div>
+        <div class="note">💡 <strong>Key insight:</strong> Money doesn't instantly leave your bank. First <strong>authorisation</strong>, then <strong>clearing</strong>, then <strong>settlement</strong> — seconds or days depending on the system.</div>
+      </section>
+
+      <!-- 5 CARD PAYMENTS -->
+      <section class="slide">
+        <div class="kicker">Explore · 04</div>
+        <h1 class="title">How Visa &amp; Mastercard Work</h1>
+        <p class="desc">They don't hold your money or issue your card. They're the network connecting four players every time you swipe.</p>
+        <div class="card-grid two">
+          <div class="card blue" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">👤</div><h3 style="font-size:13px">You</h3><p style="font-size:11.5px">Tap card or phone at the till.</p></div>
+          <div class="card lime" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">🏪</div><h3 style="font-size:13px">Merchant</h3><p style="font-size:11.5px">The shop. Their card machine comes from their bank.</p></div>
+          <div class="card glass" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">🌐</div><h3 style="font-size:13px">Network</h3><p style="font-size:11.5px">Visa/Mastercard — sets rules, routes, coordinates. Doesn't hold money.</p></div>
+          <div class="card blue" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">🏦</div><h3 style="font-size:13px">Issuer</h3><p style="font-size:11.5px">Your bank. Approves or declines each transaction.</p></div>
+        </div>
+        <h2 class="section" style="margin-top:18px">Fees on every transaction</h2>
+        <div class="card-grid">
+          <div class="card cream" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">💸 Interchange</span><span class="mono" style="font-size:11px;color:var(--muted)">paid to your bank</span></div></div>
+          <div class="card cream" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">🌐 Network</span><span class="mono" style="font-size:11px;color:var(--muted)">paid to Visa/MC</span></div></div>
+          <div class="card cream" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600">🏪 Acquirer</span><span class="mono" style="font-size:11px;color:var(--muted)">paid to merchant's bank</span></div></div>
+        </div>
+      </section>
+
+      <!-- 6 NON-BANK -->
+      <section class="slide">
+        <div class="kicker">Explore · 05</div>
+        <h1 class="title">Apps That Aren't Banks</h1>
+        <p class="desc">Not every payment app is a bank — even if it looks like one.</p>
+        <div class="card-grid">
+          <div class="card glass"><div class="icon">💶</div><h3>E-Money Institutions</h3><p>Wise, some Revolut accounts. Can hold money and make payments. Funds safeguarded but not insured like bank deposits. Can't lend.</p><span class="tag">Safeguarded, not insured</span></div>
+          <div class="card glass"><div class="icon">🔀</div><h3>Payment Processors</h3><p>Stripe, Adyen, PayFast. Process card payments for businesses. They don't hold your personal funds.</p><span class="tag">Plumbing only</span></div>
+          <div class="card glass"><div class="icon">📲</div><h3>Mobile Money</h3><p>M-Pesa, MTN MoMo. Store money on your phone SIM — no bank account needed. Funds pooled in a trust account.</p><span class="tag">SIM-based</span></div>
+          <div class="card lime"><div class="icon">🌍</div><h3>Digital Banks</h3><p>Capitec, TymeBank, Discovery Bank. These ARE banks — fully licensed, deposit-insured, regulated by SARB.</p><span class="tag">Full bank licence</span></div>
+        </div>
+        <div class="note">⚠️ <strong>Rule of thumb:</strong> Money in a licensed bank is covered by deposit insurance. Money in an app that isn't a bank may be safeguarded but not insured.</div>
+      </section>
+
+      <!-- 7 CRYPTO -->
+      <section class="slide">
+        <div class="kicker">Explore · 06</div>
+        <h1 class="title">Fiat, Crypto, CBDC &amp; Stablecoins</h1>
+        <p class="desc">Not all "digital money" is the same. Here's how the four main types compare.</p>
+        <div class="card-grid two">
+          <div class="card lime" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">💵</div><h3 style="font-size:13px">Fiat</h3><p style="font-size:11px">Rand, Dollar, Euro. Created by banks &amp; CBs. Backed by law. Most stable.</p><span class="tag">Traditional</span></div>
+          <div class="card blue" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">🏛️</div><h3 style="font-size:13px">CBDC</h3><p style="font-size:11px">Digital cash from a central bank. Like an e-rand. Backed 100%.</p><span class="tag">Gov digital cash</span></div>
+          <div class="card glass" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">₿</div><h3 style="font-size:13px">Crypto</h3><p style="font-size:11px">Bitcoin, Ethereum. No central authority. Created by code. Volatile.</p><span class="tag">Decentralised</span></div>
+          <div class="card glass" style="padding:16px"><div class="icon" style="font-size:22px;margin-bottom:8px">🔒</div><h3 style="font-size:13px">Stablecoin</h3><p style="font-size:11px">USDT, USDC. Crypto pegged to fiat. Backed by reserves. Fast global transfers.</p><span class="tag">Pegged</span></div>
+        </div>
+      </section>
+
+      <!-- 8 RAILS -->
+      <section class="slide">
+        <div class="kicker">Explore · 07</div>
+        <h1 class="title">Global &amp; Regional Rails</h1>
+        <p class="desc">Different systems move money across borders. Here are the key ones.</p>
+        <div class="card-grid">
+          <div class="card lime"><div class="icon">🌐</div><h3>SWIFT</h3><p>Secure messages between banks worldwide. Doesn't move money — it's WhatsApp for banks.</p><span class="tag">Live &amp; global</span></div>
+          <div class="card blue"><div class="icon">🌍</div><h3>PAPSS</h3><p>Pan-African Payment and Settlement System. Instant local-currency payments across Africa.</p><span class="tag">Live &amp; growing</span></div>
+          <div class="card glass"><div class="icon">🤝</div><h3>BRICS Pay</h3><p>Connects BRICS national payment systems. Cross-border QR without dollars.</p><span class="tag">Rolling out</span></div>
+          <div class="card glass"><div class="icon">🇮🇳</div><h3>UPI</h3><p>India's real-time payment system. Scan a QR to pay instantly.</p><span class="tag">Live</span></div>
+          <div class="card glass"><div class="icon">🏦</div><h3>mBridge</h3><p>CBDC-based cross-border settlement without a USD middleman.</p><span class="tag">Pilot</span></div>
+          <div class="card glass"><div class="icon">🇪🇺</div><h3>SEPA Instant</h3><p>Instant euro transfers across Europe, like a local payment.</p><span class="tag">Live</span></div>
+        </div>
+      </section>
+
+      <!-- 9 INSTITUTIONS -->
+      <section class="slide">
+        <div class="kicker">Explore · 08</div>
+        <h1 class="title">The Global Referees</h1>
+        <p class="desc">They don't run your bank — but they set the rules, standards, and safety nets.</p>
+        <div class="card-grid">
+          <div class="card lime"><div class="icon">🏦</div><h3>BIS</h3><p>The "central bank for central banks." Sets global banking rules (Basel III).</p><span class="tag">Rule-setter</span></div>
+          <div class="card blue"><div class="icon">💰</div><h3>IMF</h3><p>Monitors the global economy and lends emergency funds to countries in trouble.</p><span class="tag">Global paramedic</span></div>
+          <div class="card glass"><div class="icon">🌱</div><h3>World Bank</h3><p>Funds long-term development projects. Focused on reducing poverty.</p><span class="tag">Development</span></div>
+          <div class="card glass"><div class="icon">🚨</div><h3>FATF</h3><p>Sets global anti-money-laundering rules. Grey/black lists cause real pain.</p><span class="tag">Enforcer</span></div>
+          <div class="card glass"><div class="icon">📡</div><h3>FSB</h3><p>Monitors risks and coordinates responses. Created after 2008.</p><span class="tag">Risk watchdog</span></div>
+        </div>
+      </section>
+
+      <!-- 10 CENTRAL BANK MONEY -->
+      <section class="slide">
+        <div class="kicker">Explore · 09</div>
+        <h1 class="title">How Central Banks Create Money</h1>
+        <p class="desc">A central bank uses specific tools to inject or withdraw money from the banking system.</p>
+        <div class="card-grid">
+          <div class="card lime"><div class="icon">📋</div><h3>Open Market Operations</h3><p>CB buys government bonds from banks. Bank reserves credited — money created from nothing. Selling reverses it.</p><span class="tag">Main tool</span></div>
+          <div class="card blue"><div class="icon">🔁</div><h3>Repo Rate</h3><p>Banks borrow reserves overnight. Collateral is government bonds. Sets the floor for all rates.</p><span class="tag">Rate anchor</span></div>
+          <div class="card glass"><div class="icon">💧</div><h3>Reserve Requirements</h3><p>Lowering the minimum reserve % lets banks lend more — expanding money.</p><span class="tag">Legacy tool</span></div>
+          <div class="card glass"><div class="icon">📡</div><h3>Standing Facilities</h3><p>Always-on windows for banks to deposit surplus or borrow emergency funds.</p><span class="tag">Always-on</span></div>
+        </div>
+        <div class="note">💡 <strong>Key insight:</strong> Central banks create <strong>reserves</strong> (M0), not the broader money supply. Commercial banks multiply it through lending.</div>
+      </section>
+
+      <!-- 11 MONEY SUPPLY -->
+      <section class="slide">
+        <div class="kicker">Explore · 10</div>
+        <h1 class="title">The Money Supply: M0 to M3</h1>
+        <p class="desc">Economists measure money using "M" levels. Each is broader — it includes the one before plus less-liquid forms.</p>
+        <div class="m-tier">
+          <div class="m-badge" style="background:var(--card-send)">M0</div>
+          <div class="m-body"><h4>Cash + Central Bank Reserves</h4><p>Notes, coins, plus electronic reserves banks hold at the CB. "Base money."</p></div>
+          <div class="m-size">NARROW</div>
+        </div>
+        <div class="m-tier">
+          <div class="m-badge" style="background:var(--card-receive)">M1</div>
+          <div class="m-body"><h4>M0 + Demand Deposits</h4><p>Everyday bank accounts you can access instantly — by card, EFT, or ATM.</p></div>
+          <div class="m-size">NARROW</div>
+        </div>
+        <div class="m-tier">
+          <div class="m-badge" style="background:#E8D5A0">M2</div>
+          <div class="m-body"><h4>M1 + Savings + Short-term</h4><p>Savings accounts, money-market funds, short-term fixed deposits. SARB mainly watches this.</p></div>
+          <div class="m-size">BROAD</div>
+        </div>
+        <div class="m-tier">
+          <div class="m-badge" style="background:#D5B8E8">M3</div>
+          <div class="m-body"><h4>M2 + Large Deposits</h4><p>Longer-term deposits and large instruments. Key indicator of credit in the economy.</p></div>
+          <div class="m-size">WIDEST</div>
+        </div>
+        <div class="note">💡 "Printing money" or QE mainly expands M0. Banks then multiply it through lending — expanding M1, M2, M3.</div>
+      </section>
+
+      <!-- 12 NOSTRO VOSTRO -->
+      <section class="slide">
+        <div class="kicker">Explore · 11</div>
+        <h1 class="title">NOSTRO &amp; VOSTRO</h1>
+        <p class="desc">Banks don't have branches everywhere. They hold accounts at foreign banks — correspondent banking.</p>
+        <div class="card-grid two" style="align-items:stretch">
+          <div class="card lime" style="padding:16px">
+            <div style="font-size:26px;margin-bottom:8px">🇿🇦</div>
+            <h3 style="font-size:13px">Standard Bank (SA)</h3>
+            <p style="font-size:11.5px">Wants to send USD to a US client. Needs US banking access but has no US branch.</p>
+          </div>
+          <div class="card blue" style="padding:16px">
+            <div style="font-size:26px;margin-bottom:8px">🇺🇸</div>
+            <h3 style="font-size:13px">Citibank (USA)</h3>
+            <p style="font-size:11.5px">Acts as Standard Bank's USD correspondent. Holds USD on their behalf.</p>
+          </div>
+        </div>
+        <div class="card glass" style="margin-top:10px;padding:16px">
+          <div style="display:flex;justify-content:space-between;gap:12px">
+            <div style="flex:1;text-align:center;padding:10px;background:var(--card-receive);border-radius:12px">
+              <div class="mono" style="font-size:10px;font-weight:800;letter-spacing:1.2px;margin-bottom:4px">NOSTRO</div>
+              <div style="font-size:11.5px;font-weight:600">"Our account with you"</div>
+              <div style="font-size:10.5px;color:var(--muted);margin-top:3px">Std Bank's USD at Citi</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:10px;background:var(--card-send);border-radius:12px">
+              <div class="mono" style="font-size:10px;font-weight:800;letter-spacing:1.2px;margin-bottom:4px">VOSTRO</div>
+              <div style="font-size:11.5px;font-weight:600">"Your account with us"</div>
+              <div style="font-size:10.5px;color:var(--muted);margin-top:3px">Same account, Citi's view</div>
+            </div>
+          </div>
+        </div>
+        <div class="note">🔑 NOSTRO = "ours" (abroad). VOSTRO = "yours" (held with us). Same account — two perspectives.</div>
+      </section>
+
+      <!-- 13 KYC AML -->
+      <section class="slide">
+        <div class="kicker">Explore · 12</div>
+        <h1 class="title">KYC, AML &amp; Compliance</h1>
+        <p class="desc">Before any bank or platform lets you move money, they must verify who you are.</p>
+        <div class="card lime" style="margin-bottom:10px">
+          <h2 class="section" style="margin-bottom:10px">🪪 KYC — Know Your Customer</h2>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;align-items:flex-start"><div class="mono" style="width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.15);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div><div><div style="font-size:12px;font-weight:700;margin-bottom:2px">Customer Identification</div><div style="font-size:11px;color:rgba(0,0,0,.62);line-height:1.45">Name, ID, DOB, address — verified with a passport or ID.</div></div></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><div class="mono" style="width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.15);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div><div><div style="font-size:12px;font-weight:700;margin-bottom:2px">Customer Due Diligence</div><div style="font-size:11px;color:rgba(0,0,0,.62);line-height:1.45">Understand source of funds, expected transactions. Ongoing.</div></div></div>
+            <div style="display:flex;gap:10px;align-items:flex-start"><div class="mono" style="width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.15);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div><div><div style="font-size:12px;font-weight:700;margin-bottom:2px">Enhanced Due Diligence</div><div style="font-size:11px;color:rgba(0,0,0,.62);line-height:1.45">Extra scrutiny for PEPs, offshore structures, high-value clients.</div></div></div>
+          </div>
+        </div>
+        <div class="card glass">
+          <h3 style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;margin-bottom:12px">TRANSACTION RISK</h3>
+          <div class="risk-row"><div class="risk-lbl">Small domestic</div><div class="risk-track"><div class="risk-fill" style="width:25%;background:var(--led)"></div></div></div>
+          <div class="risk-row"><div class="risk-lbl">Cross-border</div><div class="risk-track"><div class="risk-fill" style="width:55%;background:#E8A845"></div></div></div>
+          <div class="risk-row"><div class="risk-lbl">PEP + cash</div><div class="risk-track"><div class="risk-fill" style="width:85%;background:#DC4B3E"></div></div></div>
+        </div>
+      </section>
+
+      <!-- 14 INSTRUMENTS -->
+      <section class="slide">
+        <div class="kicker">Explore · 13</div>
+        <h1 class="title">Banking Instruments</h1>
+        <p class="desc">Large transactions — especially international ones — require formal banking instruments.</p>
+        <div class="card-grid">
+          <div class="card lime"><div class="icon">🛡️</div><h3>Bank Guarantee / SBLC</h3><p>Bank promises to pay a third party if their client fails. Backed by bank's creditworthiness.</p><span class="tag">BG / SBLC</span></div>
+          <div class="card blue"><div class="icon">📄</div><h3>Letter of Credit</h3><p>Bank commits to pay the seller once shipping conditions are met. Backbone of trade finance.</p><span class="tag">LC / L/C</span></div>
+          <div class="card glass"><div class="icon">📡</div><h3>SWIFT Messages</h3><p>MT799 is a free-format confirmation. MT760 issues a guarantee. Widely misunderstood.</p><span class="tag">MT799 / MT760</span></div>
+          <div class="card glass"><div class="icon">✍️</div><h3>POA / RWA</h3><p>POA grants legal authority. RWA confirms verified available funds before a big deal.</p><span class="tag">POA / RWA</span></div>
+        </div>
+      </section>
+
+      <!-- 15 DTCC -->
+      <section class="slide">
+        <div class="kicker">Explore · 14</div>
+        <h1 class="title">DTCC &amp; Settlement</h1>
+        <p class="desc">When you buy a share, it doesn't settle instantly. Behind every trade is a clearing system.</p>
+        <div class="card lime" style="margin-bottom:10px">
+          <div style="font-size:30px;margin-bottom:10px">🏛️</div>
+          <h3 style="margin-bottom:6px">DTCC — US Settlement Utility</h3>
+          <p style="margin-bottom:14px">Processes the vast majority of US securities. DTC (settlement), NSCC (equities), FICC (fixed income).</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:rgba(0,0,0,.08);border-radius:10px;padding:12px;text-align:center"><div class="mono big-num" style="font-size:20px;color:var(--text)">$2.5Q</div><div class="big-lbl" style="color:rgba(0,0,0,.6)">Annual value</div></div>
+            <div style="background:rgba(0,0,0,.08);border-radius:10px;padding:12px;text-align:center"><div class="mono big-num" style="font-size:20px;color:var(--text)">T+1</div><div class="big-lbl" style="color:rgba(0,0,0,.6)">US equities</div></div>
+          </div>
+        </div>
+        <div class="card-grid two">
+          <div class="card glass" style="padding:14px"><h3 style="font-size:12.5px;margin-bottom:5px">🇿🇦 Strate</h3><p style="font-size:11px">SA's CSD. Settles JSE trades. T+3 → T+1.</p></div>
+          <div class="card glass" style="padding:14px"><h3 style="font-size:12.5px;margin-bottom:5px">⚖️ CCP</h3><p style="font-size:11px">Steps between buyer and seller to guarantee completion.</p></div>
+        </div>
+        <div class="note"><strong>Trade flow:</strong> Buy → broker routes → exchange matches → CCP steps in → netting → DTC settles T+1.</div>
+      </section>
+
+      <!-- 16 SWIFT EFT -->
+      <section class="slide">
+        <div class="kicker">Explore · 15</div>
+        <h1 class="title">International EFT: USA → SA</h1>
+        <p class="desc">Money travels through a chain of systems, messages, and accounts.</p>
+        <div class="card blue" style="padding:16px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><div style="font-size:26px">🇺🇸</div><div><div style="font-size:13px;font-weight:700">USA — Sender</div><div style="font-size:10.5px;color:rgba(0,0,0,.6)">Chase Bank, NY</div></div></div>
+          <div class="stat-row"><span class="lbl">Account</span><span class="val">John Smith</span></div>
+          <div class="stat-row"><span class="lbl">SWIFT/BIC</span><span class="val">CHASUS33</span></div>
+          <div class="stat-row"><span class="lbl">Bank</span><span class="val">Chase NA</span></div>
+        </div>
+        <div class="flow-steps" style="margin-bottom:10px">
+          <div class="flow-step" style="padding:10px 14px"><div class="step-bubble" style="width:30px;height:30px;font-size:14px">📨</div><div class="step-body"><div class="step-label">MT103</div><div class="step-sub">Instruction sent</div></div></div>
+          <div class="flow-step" style="padding:10px 14px"><div class="step-bubble" style="width:30px;height:30px;font-size:14px">🏦</div><div class="step-body"><div class="step-label">NOSTRO</div><div class="step-sub">USD to correspondent</div></div></div>
+          <div class="flow-step" style="padding:10px 14px"><div class="step-bubble" style="width:30px;height:30px;font-size:14px">💱</div><div class="step-body"><div class="step-label">FX Convert</div><div class="step-sub">USD → ZAR</div></div></div>
+          <div class="flow-step" style="padding:10px 14px"><div class="step-bubble" style="width:30px;height:30px;font-size:14px">✅</div><div class="step-body"><div class="step-label">Credited</div><div class="step-sub">SA account</div></div></div>
+        </div>
+        <div class="card lime" style="padding:16px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><div style="font-size:26px">🇿🇦</div><div><div style="font-size:13px;font-weight:700">SA — Receiver</div><div style="font-size:10.5px;color:rgba(0,0,0,.6)">Standard Bank</div></div></div>
+          <div class="stat-row"><span class="lbl">SWIFT/BIC</span><span class="val">SBZAZAJJ</span></div>
+          <div class="stat-row"><span class="lbl">IBAN</span><span class="val">Not used in SA</span></div>
+        </div>
+      </section>
+
+      <!-- 17 QR PAYMENTS -->
+      <section class="slide">
+        <div class="kicker">Explore · 16</div>
+        <h1 class="title">QR Code Payments</h1>
+        <p class="desc">A QR code looks simple. But scanning it kicks off a chain of real-time systems.</p>
+        <div style="display:flex;justify-content:center;margin-bottom:16px">
+          <div style="position:relative">
+            <div style="width:140px;height:140px;background:var(--glass);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:var(--shadow-card)">📱</div>
+            <div style="position:absolute;inset:-6px;border-radius:24px;border:2px solid var(--led);animation:qrp 2s ease-in-out infinite;pointer-events:none"></div>
+          </div>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="step-bubble">1</div><div class="step-body"><div class="step-label">App reads the QR</div><div class="step-sub">Decoded into URL or EMV payment string</div></div></div>
+          <div class="flow-step"><div class="step-bubble">2</div><div class="step-body"><div class="step-label">App calls network</div><div class="step-sub">Encrypted request, PIN or biometric auth</div></div></div>
+          <div class="flow-step"><div class="step-bubble">3</div><div class="step-body"><div class="step-label">Bank authorises</div><div class="step-sub">Checks funds, fraud signals, approves</div></div></div>
+          <div class="flow-step"><div class="step-bubble">4</div><div class="step-body"><div class="step-label">Instruction sent</div><div class="step-sub">Via card rails or instant system (PayShap, UPI)</div></div></div>
+          <div class="flow-step"><div class="step-bubble">5</div><div class="step-body"><div class="step-label">Merchant credited</div><div class="step-sub">Green tick on POS. Settlement follows.</div></div></div>
+        </div>
+      </section>
+
+      <!-- 18 GHD -->
+      <section class="slide">
+        <div class="kicker">Explore · 17</div>
+        <h1 class="title">The GHD Platform</h1>
+        <p class="desc">Global Family Group (GFG) — a parallel payment system built on GHD tokens.</p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="step-bubble" style="background:var(--card-send)">🏛️</div><div class="step-body"><div class="step-label">GHD Tokens issued</div><div class="step-sub">Monthly cycle (1st–15th) to your Prosperity Account</div></div></div>
+          <div class="flow-step"><div class="step-bubble" style="background:var(--card-receive)">🔄</div><div class="step-body"><div class="step-label">Transfer to Trust/Vault</div><div class="step-sub">Move GHD from Prosperity → Trust/Vault</div></div></div>
+          <div class="flow-step"><div class="step-bubble" style="background:var(--card-send)">🌐</div><div class="step-body"><div class="step-label">Add beneficiaries</div><div class="step-sub">Any bank account worldwide, in local currency</div></div></div>
+          <div class="flow-step"><div class="step-bubble" style="background:var(--card-receive)">📱</div><div class="step-body"><div class="step-label">Generate QR link</div><div class="step-sub">Scannable at any POS — deducts GHD, credits merchant</div></div></div>
+          <div class="flow-step"><div class="step-bubble" style="background:var(--card-send)">✅</div><div class="step-body"><div class="step-label">Merchant receives fiat</div><div class="step-sub">ZAR, USD, EUR — normal payment to them</div></div></div>
+        </div>
+        <div class="card glass" style="margin-top:14px;padding:16px">
+          <div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.8px;margin-bottom:10px">3-ACCOUNT STRUCTURE</div>
+          <div class="stat-row"><span class="lbl">🌱 System 1 — Prosperity</span><span class="val">GHD arrives</span></div>
+          <div class="stat-row"><span class="lbl">🔐 System 2 — Trust/Vault</span><span class="val">Pay from here</span></div>
+          <div class="stat-row"><span class="lbl">🏪 Vendor</span><span class="val">Optional business</span></div>
+        </div>
+        <div class="note">⚠️ <strong>Remember:</strong> GFG is not a bank — it's a payment system. GHD tokens are the internal unit. Payment cycle runs 1st–15th.</div>
+      </section>
+
+      <!-- 19 WRAP -->
+      <section class="slide">
+        <div class="cover">
+          <div style="font-size:48px;margin-bottom:14px">🗺️</div>
+          <h1 style="font-size:26px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px">Your Money System Map</h1>
+          <p class="sub" style="margin-bottom:24px">Six things to remember.</p>
+          <div class="takeaways">
+            <div class="takeaway"><div class="n">01</div><div><h4>Banks create most money</h4><p>Loans create new money by typing numbers into an account.</p></div></div>
+            <div class="takeaway"><div class="n">02</div><div><h4>Payments are a chain</h4><p>Authorisation → clearing → settlement, every time.</p></div></div>
+            <div class="takeaway"><div class="n">03</div><div><h4>Visa &amp; Mastercard are networks</h4><p>They connect banks — they don't hold your money.</p></div></div>
+            <div class="takeaway"><div class="n">04</div><div><h4>Not every app is a bank</h4><p>Only licensed banks offer full deposit insurance.</p></div></div>
+            <div class="takeaway"><div class="n">05</div><div><h4>Crypto ≠ CBDC ≠ Fiat</h4><p>Different rules, risks, and controllers.</p></div></div>
+            <div class="takeaway"><div class="n">06</div><div><h4>SWIFT isn't the only rail</h4><p>PAPSS, BRICS Pay, mBridge are reshaping cross-border payments.</p></div></div>
+          </div>
+          <button class="start-btn" onclick="goTo(0)" style="margin-top:24px">⟲ Explore Again</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- NAV -->
+    <footer class="navbar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="nav-buttons">
+        <button class="navbtn" id="prevBtn" onclick="navigate(-1)" disabled>←</button>
+        <span class="counter" id="counter">1 / 19</span>
+        <button class="navbtn primary" id="nextBtn" onclick="navigate(1)">→</button>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<style>
+  @keyframes qrp{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+</style>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  const counterEl = document.getElementById('counter');
+  const progressEl = document.getElementById('progressFill');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    counterEl.textContent = (current + 1) + ' / ' + total;
+    progressEl.style.width = ((current + 1) / total * 100) + '%';
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  // Touch swipe
+  let touchX = null;
+  const stage = document.getElementById('stage');
+  stage.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+    touchX = null;
+  }, { passive: true });
+
+  goTo(0);
+</script>
+</body>
+</html>

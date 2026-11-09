@@ -552,12 +552,12 @@
     if (current === total - 1) {
       if (desktopNext) {
         desktopNext.innerHTML = '🏠 Home';
-        desktopNext.onclick = () => window.location.href = '/';
+        desktopNext.onclick = () => goTo(0); // Return to slide 1
         desktopNext.disabled = false;
       }
       if (nextBtn) {
         nextBtn.innerHTML = '🏠';
-        nextBtn.onclick = () => window.location.href = '/';
+        nextBtn.onclick = () => goTo(0); // Return to slide 1
         nextBtn.disabled = false;
       }
     } else {

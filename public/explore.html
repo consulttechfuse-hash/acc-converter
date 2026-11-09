@@ -136,6 +136,7 @@
   .ticker-item{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;}
   .ticker-item.up{color:#15803D;} .ticker-item.down{color:#B91C1C;}
 
+  .stage-wrapper { flex:1; display:flex; flex-direction:column; overflow:hidden; }
   .stage{flex:1;position:relative;overflow-y:auto;padding:40px 60px;}
   .slide{display:none;animation:slideIn .3s ease;}
   .slide.active{display:block;}
@@ -164,6 +165,21 @@
   .cover-graphic{font-size:180px;animation:float 6s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
 
+  /* DESKTOP NAVIGATION ARROWS */
+  .desktop-nav {
+    display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+    padding: 16px 60px; border-top: 1px solid rgba(0,0,0,0.05);
+    background: rgba(255,255,255,0.2);
+  }
+  .desktop-btn {
+    background: var(--glass); border: none; padding: 12px 24px; border-radius: 999px;
+    font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: var(--shadow-glass);
+    transition: all 0.2s;
+  }
+  .desktop-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+  .desktop-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .desktop-btn.primary { background: var(--swap-btn); color: var(--app-bg); }
+
   /* ═══ MOBILE NAV & TICKER ═══ */
   .mobile-navbar{display:none;}
   .mobile-back-btn{display:none;}
@@ -177,6 +193,7 @@
     
     .sidebar{display:none;}
     .top-bar{display:none;}
+    .desktop-nav{display:none;} /* Hide desktop nav */
     
     .desktop-layout{flex-direction:column;}
     .stage{padding:20px;padding-top:70px;}
@@ -222,7 +239,7 @@
   <div class="mac-notch"></div>
   <div class="mac-screen">
     
-    <!-- MOBILE TICKER (Top of screen) -->
+    <!-- MOBILE TICKER -->
     <div class="mobile-ticker">
       <div class="led"></div>
       <div style="flex:1;overflow:hidden;position:relative">
@@ -252,7 +269,6 @@
         <header class="top-bar">
           <a href="/" class="back-btn">← Back to Converter</a>
           
-          <!-- DESKTOP TICKER -->
           <div class="desktop-ticker">
             <div class="led"></div>
             <div style="flex:1;overflow:hidden;position:relative">
@@ -262,65 +278,71 @@
                 <span class="ticker-item up">EUR/USD 1.087 ▲</span>
                 <span class="ticker-item down">GOLD 2,341 ▼</span>
                 <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
-                <span class="ticker-item down">BTC $67,420 ▼</span>
               </div>
             </div>
           </div>
         </header>
 
-        <div class="stage" id="stage">
-          
-          <!-- 1 COVER -->
-          <section class="slide active" id="slide-0">
-            <div class="cover">
-              <div class="cover-text">
-                <h1>How <span>Money</span><br>&amp; Payments Work</h1>
-                <p class="desc">Explore the systems that move money — banks, cards, apps, crypto, and the global rails.</p>
-                <button class="start-btn" onclick="goTo(1)">Start Exploring →</button>
+        <div class="stage-wrapper">
+          <div class="stage" id="stage">
+            
+            <!-- 1 COVER -->
+            <section class="slide active" id="slide-0">
+              <div class="cover">
+                <div class="cover-text">
+                  <h1>How <span>Money</span><br>&amp; Payments Work</h1>
+                  <p class="desc">Explore the systems that move money — banks, cards, apps, crypto, and the global rails.</p>
+                  <button class="start-btn" onclick="goTo(1)">Start Exploring →</button>
+                </div>
+                <div class="cover-graphic">🌍</div>
               </div>
-              <div class="cover-graphic">🌍</div>
-            </div>
-          </section>
+            </section>
 
-          <!-- 2 WHAT IS MONEY -->
-          <section class="slide" id="slide-1">
-            <div class="kicker">Explore · 01</div>
-            <h1 class="title">What is Money?</h1>
-            <p class="desc">Money is anything widely accepted as payment. Today, most money is just numbers in a computer — not gold, not paper.</p>
-            <div class="card-grid">
-              <div class="card lime"><div class="icon">🏛️</div><h3>Central Bank Money</h3><p>Cash notes and coins you can hold. Also the digital reserves banks keep at the central bank. The most trusted type.</p></div>
-              <div class="card blue"><div class="icon">💳</div><h3>Bank Account Money</h3><p>The balance in your bank app. Created when banks make loans — when a bank lends you R100,000, it types that number into your account.</p></div>
-              <div class="card glass"><div class="icon">📜</div><h3>Fiat Money</h3><p>Money backed by law and trust — not gold. Its value comes from government declaring it legal tender.</p></div>
-            </div>
-          </section>
-
-          <!-- 3 PAYMENT FLOW -->
-          <section class="slide" id="slide-2">
-            <div class="kicker">Explore · 02</div>
-            <h1 class="title">How a Payment Moves</h1>
-            <p class="desc">When you tap your card or send an EFT, a lot happens invisibly in milliseconds.</p>
-            <div class="flow-steps">
-              <div class="flow-step"><div class="step-bubble">📱</div><h3>You Pay</h3><p>Tap card, app, or checkout.</p></div>
-              <div class="flow-step"><div class="step-bubble">🔍</div><h3>Processor</h3><p>Checks fraud, routes transaction.</p></div>
-              <div class="flow-step"><div class="step-bubble">🏦</div><h3>Your Bank</h3><p>Checks funds, approves or declines.</p></div>
-              <div class="flow-step"><div class="step-bubble">⚖️</div><h3>Clearing</h3><p>Banks agree on who owes what.</p></div>
-              <div class="flow-step"><div class="step-bubble">✅</div><h3>Settlement</h3><p>Real money moves via central bank reserves.</p></div>
-            </div>
-          </section>
-
-          <!-- ... Add slides 3 to 17 ... -->
-
-          <!-- 19 WRAP -->
-          <section class="slide" id="slide-18">
-            <div class="cover">
-              <div class="cover-text">
-                <h1 style="font-size:42px;">Your Money System Map</h1>
-                <p class="desc">You have explored the core of global finance. Ready to apply this to your own conversions?</p>
-                <button class="start-btn" onclick="window.location.href='/'">← Back to Calculator</button>
+            <!-- 2 WHAT IS MONEY -->
+            <section class="slide" id="slide-1">
+              <div class="kicker">Explore · 01</div>
+              <h1 class="title">What is Money?</h1>
+              <p class="desc">Money is anything widely accepted as payment. Today, most money is just numbers in a computer — not gold, not paper.</p>
+              <div class="card-grid">
+                <div class="card lime"><div class="icon">🏛️</div><h3>Central Bank Money</h3><p>Cash notes and coins you can hold. Also the digital reserves banks keep at the central bank. The most trusted type.</p></div>
+                <div class="card blue"><div class="icon">💳</div><h3>Bank Account Money</h3><p>The balance in your bank app. Created when banks make loans — when a bank lends you R100,000, it types that number into your account.</p></div>
+                <div class="card glass"><div class="icon">📜</div><h3>Fiat Money</h3><p>Money backed by law and trust — not gold. Its value comes from government declaring it legal tender.</p></div>
               </div>
-              <div class="cover-graphic">🗺️</div>
-            </div>
-          </section>
+            </section>
+
+            <!-- 3 PAYMENT FLOW -->
+            <section class="slide" id="slide-2">
+              <div class="kicker">Explore · 02</div>
+              <h1 class="title">How a Payment Moves</h1>
+              <p class="desc">When you tap your card or send an EFT, a lot happens invisibly in milliseconds.</p>
+              <div class="flow-steps">
+                <div class="flow-step"><div class="step-bubble">📱</div><h3>You Pay</h3><p>Tap card, app, or checkout.</p></div>
+                <div class="flow-step"><div class="step-bubble">🔍</div><h3>Processor</h3><p>Checks fraud, routes transaction.</p></div>
+                <div class="flow-step"><div class="step-bubble">🏦</div><h3>Your Bank</h3><p>Checks funds, approves or declines.</p></div>
+                <div class="flow-step"><div class="step-bubble">⚖️</div><h3>Clearing</h3><p>Banks agree on who owes what.</p></div>
+                <div class="flow-step"><div class="step-bubble">✅</div><h3>Settlement</h3><p>Real money moves via central bank reserves.</p></div>
+              </div>
+            </section>
+
+            <!-- 19 WRAP -->
+            <section class="slide" id="slide-18">
+              <div class="cover">
+                <div class="cover-text">
+                  <h1 style="font-size:42px;">Your Money System Map</h1>
+                  <p class="desc">You have explored the core of global finance. Ready to apply this to your own conversions?</p>
+                  <button class="start-btn" onclick="window.location.href='/'">← Back to Calculator</button>
+                </div>
+                <div class="cover-graphic">🗺️</div>
+              </div>
+            </section>
+
+          </div>
+
+          <!-- DESKTOP NAVIGATION ARROWS -->
+          <div class="desktop-nav">
+            <button class="desktop-btn" id="desktop-prev" onclick="navigate(-1)" disabled>← Previous</button>
+            <button class="desktop-btn primary" id="desktop-next" onclick="navigate(1)">Next →</button>
+          </div>
         </div>
 
         <!-- MOBILE NAV -->
@@ -347,6 +369,8 @@
   const progressEl = document.getElementById('progressFill');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
+  const desktopPrev = document.getElementById('desktop-prev');
+  const desktopNext = document.getElementById('desktop-next');
   const sidebarNav = document.getElementById('sidebar-nav');
 
   const slideTitles = [
@@ -377,8 +401,14 @@
     
     if(counterEl) counterEl.textContent = (current + 1) + ' / ' + total;
     if(progressEl) progressEl.style.width = ((current + 1) / total * 100) + '%';
+    
+    // Update Mobile Arrows
     if(prevBtn) prevBtn.disabled = current === 0;
     if(nextBtn) nextBtn.disabled = current === total - 1;
+    
+    // Update Desktop Arrows
+    if(desktopPrev) desktopPrev.disabled = current === 0;
+    if(desktopNext) desktopNext.disabled = current === total - 1;
 
     navItems.forEach((item, index) => {
       item.classList.toggle('active', index === current);

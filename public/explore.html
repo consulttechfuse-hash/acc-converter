@@ -50,7 +50,6 @@
     position:relative;
     display:flex;flex-direction:column;
   }
-  /* Mac Screen Inner Border */
   .mac-screen{
     background:var(--app-bg);
     border-radius:8px;
@@ -60,14 +59,12 @@
     position:relative;
     border: 2px solid #000;
   }
-  /* Mac Notch */
   .mac-notch{
     position:absolute;top:0;left:50%;transform:translateX(-50%);
     width:120px;height:20px;background:#000;border-radius:0 0 10px 10px;z-index:50;
     display:flex;align-items:center;justify-content:center;gap:4px;
   }
   .mac-notch::before, .mac-notch::after { content:''; width:6px; height:6px; border-radius:50%; background:#333; }
-  /* Mac Base */
   .mac-base{
     position:absolute;bottom:-14px;left:0;width:100%;height:14px;
     background:#D1D1D6;border-radius:0 0 16px 16px;
@@ -79,9 +76,7 @@
   }
 
   /* ═══ DESKTOP LAYOUT ═══ */
-  .desktop-layout{
-    display:flex;width:100%;height:100%;
-  }
+  .desktop-layout{ display:flex;width:100%;height:100%; }
 
   /* Sidebar */
   .sidebar{
@@ -109,9 +104,8 @@
   .nav-num{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:0.6;width:18px;}
 
   /* Main Content */
-  .main-content{
-    flex:1;display:flex;flex-direction:column;overflow:hidden;
-  }
+  .main-content{ flex:1;display:flex;flex-direction:column;overflow:hidden; }
+  
   .top-bar{
     height:56px;border-bottom:1px solid rgba(0,0,0,0.05);
     display:flex;align-items:center;justify-content:space-between;
@@ -123,9 +117,26 @@
     border-radius:999px;box-shadow:var(--shadow-glass);transition:transform 0.2s;
   }
   .back-btn:hover{transform:translateX(-2px);}
-  .stage{flex:1;position:relative;overflow-y:auto;padding:40px 60px;}
   
-  /* Widescreen Slide Styles */
+  /* LIVE TICKER (Desktop) */
+  .desktop-ticker{
+    display:flex;align-items:center;gap:12px;
+    background:var(--ticker-bg);backdrop-filter:blur(10px);
+    padding:8px 16px;border-radius:999px;border:1px solid rgba(0,0,0,0.05);
+    font-size:11px;font-weight:600;letter-spacing:.3px;overflow:hidden;white-space:nowrap;
+    width:400px;
+  }
+  .led{
+    width:8px;height:8px;border-radius:50%;background:var(--led);
+    box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 2s infinite;flex-shrink:0;
+  }
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .ticker-track{display:flex;gap:18px;animation:scroll 20s linear infinite;padding-left:20px;}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ticker-item{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;}
+  .ticker-item.up{color:#15803D;} .ticker-item.down{color:#B91C1C;}
+
+  .stage{flex:1;position:relative;overflow-y:auto;padding:40px 60px;}
   .slide{display:none;animation:slideIn .3s ease;}
   .slide.active{display:block;}
   @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -134,21 +145,17 @@
   h1.title{font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px;}
   .desc{font-size:16px;color:var(--muted);line-height:1.6;margin-bottom:32px;max-width:800px;}
   
-  /* Horizontal Card Grids for Desktop */
   .card-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;}
   .card{border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-card);}
   .card h3{font-size:18px;font-weight:700;margin-bottom:10px;}
   .card p{font-size:14px;line-height:1.5;}
   .card .icon{font-size:32px;margin-bottom:16px;}
-  
   .card.lime{background:var(--card-send);} .card.blue{background:var(--card-receive);} .card.glass{background:var(--glass);}
   
-  /* Horizontal Flow Steps */
   .flow-steps{display:flex;flex-direction:row;gap:16px;overflow-x:auto;padding-bottom:16px;}
   .flow-step{min-width:240px;flex:1;background:var(--glass);border-radius:var(--radius-sm);padding:20px;box-shadow:var(--shadow-glass);}
   .step-bubble{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--app-bg);margin-bottom:12px;}
   
-  /* Cover */
   .cover{display:flex;flex-direction:row;align-items:center;justify-content:space-between;height:100%;gap:60px;max-width:1000px;margin:0 auto;}
   .cover-text h1{font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:20px;}
   .cover-text h1 span{color:#15803D;}
@@ -157,9 +164,10 @@
   .cover-graphic{font-size:180px;animation:float 6s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
 
-  /* ═══ MOBILE FALLBACK (Hidden on Desktop) ═══ */
+  /* ═══ MOBILE NAV & TICKER ═══ */
   .mobile-navbar{display:none;}
   .mobile-back-btn{display:none;}
+  .mobile-ticker{display:none;}
 
   @media (max-width: 1024px) {
     body{padding:0;}
@@ -168,10 +176,10 @@
     .mac-screen{border-radius:0;border:none;}
     
     .sidebar{display:none;}
-    .top-bar{display:none;} /* Hide desktop top bar */
+    .top-bar{display:none;}
     
     .desktop-layout{flex-direction:column;}
-    .stage{padding:20px;padding-top:60px;}
+    .stage{padding:20px;padding-top:70px;}
     
     .slide .card-grid{grid-template-columns:1fr;}
     .slide .flow-steps{flex-direction:column;}
@@ -179,12 +187,20 @@
     .cover-graphic{font-size:100px;}
     .cover-text h1{font-size:36px;}
     
-    /* Show Mobile Elements */
     .mobile-back-btn{
-      display:flex;position:absolute;top:20px;left:20px;z-index:100;
+      display:flex;position:absolute;top:50px;left:20px;z-index:100;
       text-decoration:none;color:#000;font-size:12px;font-weight:700;
       background:#fff;padding:8px 14px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,0.1);
     }
+    
+    .mobile-ticker {
+      display:flex; align-items:center; gap:10px;
+      position:absolute; top:0; left:0; width:100%; height:40px;
+      background:var(--ticker-bg); backdrop-filter:blur(10px);
+      padding:0 20px; font-size:11px; font-weight:600; z-index:90;
+      border-bottom:1px solid rgba(0,0,0,0.05);
+    }
+
     .mobile-navbar{
       display:flex;flex-direction:column;gap:10px;padding:12px 20px 20px;
       background:rgba(255,255,255,0.6);border-top:1px solid rgba(0,0,0,0.05);
@@ -206,6 +222,20 @@
   <div class="mac-notch"></div>
   <div class="mac-screen">
     
+    <!-- MOBILE TICKER (Top of screen) -->
+    <div class="mobile-ticker">
+      <div class="led"></div>
+      <div style="flex:1;overflow:hidden;position:relative">
+        <div class="ticker-track">
+          <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+          <span class="ticker-item down">BTC $67,420 ▼</span>
+          <span class="ticker-item up">EUR/USD 1.087 ▲</span>
+          <span class="ticker-item down">GOLD 2,341 ▼</span>
+          <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+        </div>
+      </div>
+    </div>
+
     <!-- MOBILE BACK BUTTON -->
     <a href="/" class="mobile-back-btn">← Back</a>
 
@@ -218,20 +248,28 @@
 
       <!-- MAIN CONTENT -->
       <main class="main-content">
-        <!-- TOP BAR (Desktop) -->
+        <!-- TOP BAR (Desktop with Ticker) -->
         <header class="top-bar">
           <a href="/" class="back-btn">← Back to Converter</a>
-          <div class="ticker" style="padding:0;background:none;border:none;">
+          
+          <!-- DESKTOP TICKER -->
+          <div class="desktop-ticker">
             <div class="led"></div>
-            <div class="ticker-track">
-              <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
-              <span class="ticker-item down">BTC $67,420 ▼</span>
+            <div style="flex:1;overflow:hidden;position:relative">
+              <div class="ticker-track">
+                <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+                <span class="ticker-item down">BTC $67,420 ▼</span>
+                <span class="ticker-item up">EUR/USD 1.087 ▲</span>
+                <span class="ticker-item down">GOLD 2,341 ▼</span>
+                <span class="ticker-item up">USD/ZAR 18.42 ▲</span>
+                <span class="ticker-item down">BTC $67,420 ▼</span>
+              </div>
             </div>
           </div>
         </header>
 
         <div class="stage" id="stage">
-          <!-- SLIDES INJECTED VIA JS -->
+          
           <!-- 1 COVER -->
           <section class="slide active" id="slide-0">
             <div class="cover">
@@ -270,8 +308,7 @@
             </div>
           </section>
 
-          <!-- Add remaining slides 3 to 18 here, using the same horizontal card-grid logic -->
-          <!-- ... -->
+          <!-- ... Add slides 3 to 17 ... -->
 
           <!-- 19 WRAP -->
           <section class="slide" id="slide-18">
@@ -312,7 +349,6 @@
   const nextBtn = document.getElementById('nextBtn');
   const sidebarNav = document.getElementById('sidebar-nav');
 
-  // Generate Sidebar Navigation
   const slideTitles = [
     "Introduction", "What is Money?", "How a Payment Moves",
     "Visa & Mastercard", "Non-Bank Apps", "Crypto & CBDC",
@@ -335,18 +371,15 @@
   function goTo(n) {
     if (n < 0 || n >= total) return;
     
-    // Update active slide
     slides[current].classList.remove('active');
     current = n;
     slides[current].classList.add('active');
     
-    // Update UI
     if(counterEl) counterEl.textContent = (current + 1) + ' / ' + total;
     if(progressEl) progressEl.style.width = ((current + 1) / total * 100) + '%';
     if(prevBtn) prevBtn.disabled = current === 0;
     if(nextBtn) nextBtn.disabled = current === total - 1;
 
-    // Update Sidebar
     navItems.forEach((item, index) => {
       item.classList.toggle('active', index === current);
     });
